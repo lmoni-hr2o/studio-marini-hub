@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Totale — L'Ufficio Automatico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+        <p style="margin-top: 20px; font-weight: 600; color: var(--g-blue); font-family: 'Poppins';">Inizializzazione Hub Totale...</p>
+    </div>
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <header>
+        <div class="logo">
+            <div style="background: var(--g-blue); width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">M</div>
+            STUDIO MARINI HUB
+        </div>
+        <nav>
+            <a href="#presentazione">Presentazione</a>
+            <a href="#moduli">Moduli</a>
+            <a href="#laboratori">Laboratori</a>
+            <a href="#prompt">Prompt AI</a>
+            <a href="#roadmap">Roadmap</a>
+            <a href="#risorse">Risorse</a>
+            <a href="mailto:info@mariniformazione.it" class="btn btn-blue" style="padding: 10px 25px; margin-left: 20px;">Supporto</a>
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <section class="hero">
+            <span class="badge badge-cloud">Masterclass 2026</span>
+            <h1>L'Ufficio <span style="color: var(--g-blue);">Automatico</span></h1>
+            <p>Google Workspace per PMI: Automazione, Pagamenti e Intelligenza Artificiale</p>
+            <div style="display: flex; gap: 20px; justify-content: center;">
+                <a href="#moduli" class="btn btn-blue">Esplora i Moduli</a>
+                <a href="#laboratori" class="btn btn-outline">Laboratori Pratici</a>
+            </div>
+        </section>
+
+        <h2 class="section-title" id="moduli"><i class="fas fa-book-open"></i> I Moduli del Corso</h2>
+        
+        <div class="tabs-container">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="openTab('corso-base')">
+                    <span class="badge badge-cloud">Corso Base</span>
+                    <span>L'Ufficio Automatico</span>
+                    <span class="tab-duration">4 ore</span>
+                </button>
+                <button class="tab-btn" onclick="openTab('modulo-1')">
+                    <span class="badge badge-ai">Avanzato 1</span>
+                    <span>Booking & Pagamenti</span>
+                    <span class="tab-duration">2 ore</span>
+                </button>
+                <button class="tab-btn" onclick="openTab('modulo-2')">
+                    <span class="badge badge-ai">Avanzato 2</span>
+                    <span>Segreteria AI</span>
+                    <span class="tab-duration">2 ore</span>
+                </button>
+                <button class="tab-btn" onclick="openTab('modulo-3')">
+                    <span class="badge badge-ai">Avanzato 3</span>
+                    <span>Documenti AI</span>
+                    <span class="tab-duration">2 ore</span>
+                </button>
+            </div>
+
+            <div id="corso-base" class="tab-content active">
+                <div class="module-header">
+                    <h3>Corso Base: L'Ufficio Automatico</h3>
+                    <p>Durata: 4 ore | Obiettivo: Mappare i bisogni, mostrare l'AI, raccogliere contatti per upselling</p>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-time">Ora 1</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-envelope"></i> La Posta Elettronica che si scrive da sola</h4>
+                            <ul>
+                                <li>Giro di Tavolo Strategico: raccogliere i problemi dei partecipanti</li>
+                                <li>Etichette e Filtri: organizzazione automatica della inbox</li>
+                                <li>Gemini in Gmail: riassunti e scrittura assistita</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Ora 2</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-calendar-check"></i> L'Agenda che ti fa incassare</h4>
+                            <ul>
+                                <li>Inviti automatici e promemoria per ridurre i no-show</li>
+                                <li>Vetrina Prenotazioni: calendario pubblico senza impegni privati</li>
+                                <li>Integrazione Stripe: pagamento anticipato automatico</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Ora 3</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-users"></i> Riunioni Smart e Documenti Istantanei</h4>
+                            <ul>
+                                <li>Meet con Trascrizione automatica</li>
+                                <li>Da trascrizione a To-Do list con Gemini</li>
+                                <li>Generazione documenti con AI</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Ora 4</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-hand-holding-usd"></i> Limiti e Upselling</h4>
+                            <ul>
+                                <li>Il "Muro" di Google: cosa non può fare</li>
+                                <li>Presentazione App Studio Marini</li>
+                                <li>Raccolta lead e questionario digitale</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="modulo-1" class="tab-content">
+                <div class="module-header">
+                    <h3>Modulo Avanzato 1: Booking & Pagamenti Digitali</h3>
+                    <p>Durata: 2 ore | Approccio: Laboratorio Pratico su PC (Serve Licenza Premium)</p>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 1</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-cogs"></i> Architettura dell'Agenda</h4>
+                            <ul>
+                                <li>Impostazione orari di reperibilità</li>
+                                <li>Giorni di chiusura (ferie, festività)</li>
+                                <li>Tempo di cuscinetto tra appuntamenti</li>
+                                <li>Prenotazioni con minimo preavviso</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 2</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-list"></i> Il Listino Servizi</h4>
+                            <ul>
+                                <li>Creazione Tipi di Appuntamento</li>
+                                <li>Descrizioni dettagliate e durata</li>
+                                <li>Campi modulo obbligatori</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 3</div>
+                        <div class="timeline-content">
+                            <h4><i class="fab fa-stripe-s"></i> Integrazione Finanziaria Stripe</h4>
+                            <ul>
+                                <li>Collegamento account Stripe ↔ Google Workspace</li>
+                                <li>Pagamento totale anticipato o quota fissa</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 4</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-share-alt"></i> Distribuzione del Link</h4>
+                            <ul>
+                                <li>Generazione link pubblico Vetrina</li>
+                                <li>Integrazione WhatsApp Business</li>
+                                <li>Pulsante Prenota su Instagram/Facebook</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="script-box">
+                    <h4><i class="fas fa-bullhorn"></i> Script Commerciale</h4>
+                    <blockquote>"Oggi avete trasformato il vostro calendario in una macchina che prende appuntamenti e incassa soldi in automatico 24 ore su 24, azzerando le perdite di tempo al telefono e tutelandovi contro i clienti che non si presentano. Vi ricordo che questa funzione, insieme a molte altre che vedremo nei prossimi moduli, si disattiverà se il vostro account Google non è aggiornato alla versione Workspace Business Premium."</blockquote>
+                </div>
+            </div>
+
+            <div id="modulo-2" class="tab-content">
+                <div class="module-header">
+                    <h3>Modulo Avanzato 2: Segreteria AI</h3>
+                    <p>Durata: 2 ore | Approccio: Esercitazioni su Prompt Engineering e Gestione Meet</p>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 1</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-mail-bulk"></i> Dominare la Posta Elettronica</h4>
+                            <ul>
+                                <li>Addestrare l'AI al proprio tono di voce</li>
+                                <li>Creazione modelli email standard</li>
+                                <li>Prompt per reclami e preventivi</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 2</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-video"></i> Il Flow della Riunione Trascritta</h4>
+                            <ul>
+                                <li>Avvio Meet con trascrizione automatica</li>
+                                <li>Roleplay in coppie da 5 minuti</li>
+                                <li>Estrazione decisioni dalla trascrizione</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 3</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-tasks"></i> L'AI che organizza il lavoro</h4>
+                            <ul>
+                                <li>Riassunto esecutivo in 4 punti</li>
+                                <li>Tabella To-Do con azione, assegnato, scadenza</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="script-box">
+                    <h4><i class="fas fa-bullhorn"></i> Script Commerciale</h4>
+                    <blockquote>"Avete appena visto come l'Intelligenza Artificiale possa farvi risparmiare dalle 2 alle 3 ore al giorno di lavori ripetitivi. Tuttavia, l'AI vi dice 'Cosa fare' e 'A chi tocca'. Se l'AI ha assegnato a Mario l'incarico di andare a fare il sopralluogo dal cliente, come fate poi a tracciare che Mario ci è andato davvero, per quante ore, e a mandare il tutto in fatturazione su Team System? Qui Google si ferma."</blockquote>
+                </div>
+            </div>
+
+            <div id="modulo-3" class="tab-content">
+                <div class="module-header">
+                    <h3>Modulo Avanzato 3: La Fabbrica dei Documenti</h3>
+                    <p>Durata: 2 ore | Approccio: Esercitazioni su Google Docs e rielaborazione dati</p>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 1</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-file-pdf"></i> Analisi Documenti Complessi</h4>
+                            <ul>
+                                <li>Estrazione vincoli economici e scadenze</li>
+                                <li>Semplificazione testi legali in parole semplici</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 2</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-file-alt"></i> Generazione Documenti da Zero</h4>
+                            <ul>
+                                <li>Manuale Operativo di Apertura/Chiusura</li>
+                                <li>Creazione procedu
+re aziendali</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">Lab 3</div>
+                        <div class="timeline-content">
+                            <h4><i class="fas fa-envelope-open-text"></i> Dalla Mail al Documento</h4>
+                            <ul>
+                                <li>Estrazione dati da email multiple</li>
+                                <li>Impaginazione automatica in Scheda Lavoro</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="script-box">
+                    <h4><i class="fas fa-bullhorn"></i> Script Commerciale</h4>
+                    <blockquote>"La velocità con cui oggi abbiamo prodotto e analizzato documenti complessi è sbalorditiva. Per far sì che Gemini possa accedere a tutti i vostri file Drive e alle vostre email in modo sicuro, elaborando documenti lunghi e complessi all'interno del vostro ecosistema aziendale, è necessario l'add-on 'Gemini per Google Workspace'. Possiamo farvi una quotazione personalizzata in base al numero di utenti."</blockquote>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="laboratori"><i class="fas fa-flask"></i> Laboratori Pratici</h2>
+        <div class="grid">
+            <div class="card lab-card">
+                <span class="badge badge-cloud">Lab 1</span>
+                <h3>Configura il Tuo Agenda</h3>
+                <p>Imposta orari, pause e limiti di prenotazione</p>
+                <button class="btn btn-outline" onclick="openTab('modulo-1')">Vai al Lab</button>
+            </div>
+            <div class="card lab-card">
+                <span class="badge badge-cloud">Lab 2</span>
+                <h3>Crea i Tuoi Servizi</h3>
+                <p>Definisci tipi appuntamento con durata e prezzi</p>
+                <button class="btn btn-outline" onclick="openTab('modulo-1')">Vai al Lab</button>
+            </div>
+            <div class="card lab-card">
+                <span class="badge badge-cloud">Lab 3</span>
+                <h3>Collega Stripe</h3>
+                <p>Configura pagamenti anticipati</p>
+                <button class="btn btn-outline" onclick="openTab('modulo-1')">Vai al Lab</button>
+            </div>
+            <div class="card lab-card">
+                <span class="badge badge-ai">Lab 4</span>
+                <h3>Scrivi Email AI</h3>
+                <p>Prova i prompt per reclami e preventivi</p>
+                <button class="btn btn-outline" onclick="openTab('modulo-2')">Vai al Lab</button>
+            </div>
+            <div class="card lab-card">
+                <span class="badge badge-ai">Lab 5</span>
+                <h3>Riunione Trascritta</h3>
+                <p>Simula meeting e estrai azioni</p>
+                <button class="btn btn-outline" onclick="openTab('modulo-2')">Vai al Lab</button>
+            </div>
+            <div class="card lab-card">
+                <span class="badge badge-ai">Lab 6</span>
+                <h3>Genera Documenti</h3>
+                <p>Crea manuali e procedure automatiche</p>
+                <button class="btn btn-outline" onclick="openTab('modulo-3')">Vai al Lab</button>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="prompt"><i class="fas fa-robot"></i> Prompt Library</h2>
+        <p style="margin-bottom: 30px; color: var(--subtext);">Copia e incolla questi prompt nei tuoi laboratori AI</p>
+        
+        <div class="grid">
+            <div class="card prompt-card">
+                <span class="badge badge-ai">Reclamo</span>
+                <h4>Risposta Reclamo Cliente</h4>
+                <div class="prompt-box">
+                    <code>Agisci come il responsabile customer care del mio centro estetico/negozio. Rispondi a un cliente che si lamenta di un servizio ritardato. Scusati sinceramente, offri il 15% di sconto sul prossimo trattamento, e rassicuralo. Tono molto accogliente ed empatico.</code>
+                </div>
+                <button class="btn btn-blue" onclick="copyPrompt(this)">
+                    <i class="fas fa-copy"></i> Copia
+                </button>
+            </div>
+
+            <div class="card prompt-card">
+                <span class="badge badge-ai">Preventivo</span>
+                <h4>Email Preventivo</h4>
+                <div class="prompt-box">
+                    <code>Prendi questi appunti sparsi [Inserire bullet points grezzi] e trasformali in un'email professionale di proposta commerciale per l'installazione di una caldaia, strutturata a paragrafi chiari e con una chiamata all'azione finale per fissare una call.</code>
+                </div>
+                <button class="btn btn-blue" onclick="copyPrompt(this)">
+                    <i class="fas fa-copy"></i> Copia
+                </button>
+            </div>
+
+            <div class="card prompt-card">
+                <span class="badge badge-ai">Riassunto</span>
+                <h4>Estrai Decisioni da Trascrizione</h4>
+                <div class="prompt-box">
+                    <code>Leggi l'intera trascrizione della riunione. 1) Fammi un riassunto esecutivo in 4 punti. 2) Crea una tabella delle attività (To-Do list) con tre colonne: 'Azione da compiere', 'Assegnato a', 'Scadenza'. Se la scadenza non è menzionata, suggeriscila tu in modo logico.</code>
+                </div>
+                <button class="btn btn-blue" onclick="copyPrompt(this)">
+                    <i class="fas fa-copy"></i> Copia
+                </button>
+            </div>
+
+            <div class="card prompt-card">
+                <span class="badge badge-ai">Estrazione</span>
+                <h4>Estrai da PDF</h4>
+                <div class="prompt-box">
+                    <code>Analizza questo PDF. Estrai esclusivamente i vincoli economici e le scadenze temporali per la presentazione dei documenti. Ignora tutto il resto.</code>
+                </div>
+                <button class="btn btn-blue" onclick="copyPrompt(this)">
+                    <i class="fas fa-copy"></i> Copia
+                </button>
+            </div>
+
+            <div class="card prompt-card">
+                <span class="badge badge-ai">Semplificazione</span>
+                <h4>Semplifica Testo Legale</h4>
+                <div class="prompt-box">
+                    <code>Agisci come un avvocato che spiega le cose a un bambino di 10 anni. Leggi l'articolo 4 di questo contratto e spiegami, in parole povere, quali sono i rischi se firmo.</code>
+                </div>
+                <button class="btn btn-blue" onclick="copyPrompt(this)">
+                    <i class="fas fa-copy"></i> Copia
+                </button>
+            </div>
+
+            <div class="card prompt-card">
+                <span class="badge badge-ai">Procedura</span>
+                <h4>Genera Manuale Operativo</h4>
+                <div class="prompt-box">
+                    <code>Agisci come l'Operations Manager di [Tipo di Azienda]. Crea un 'Manuale Operativo di Apertura e Chiusura Negozio'. Deve contenere un elenco puntato delle operazioni da fare la mattina (dall'allarme all'accensione casse) e la sera (pulizie, chiusura contabile, spegnimento luci). Formattalo con intestazioni chiare (H1, H2).</code>
+                </div>
+                <button class="btn btn-blue" onclick="copyPrompt(this)">
+                    <i class="fas fa-copy"></i> Copia
+                </button>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="presentazione"><i class="fas fa-desktop"></i> Slide Presentazione</h2>
+        <div class="slide-viewer" id="viewer">
+            <div class="slide-content active">
+                <div style="background: var(--g-blue); width: 80px; height: 80px; border-radius: 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold;">M</div>
+                <h2>L'Ufficio Automatico</h2>
+                <p>Google Workspace per PMI — Automazione e AI</p>
+                <div style="width: 150px; height: 4px; background: var(--g-red); margin: 30px 0;"></div>
+                <p style="font-size: 18px;">Studio Marini Formazione • Aprile 2026</p>
+            </div>
+            <div class="slide-content">
+                <h2>Chi Siamo</h2>
+                <p>Partners della Trasformazione</p>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--g-green);"></i> 15+ Anni di esperienza IT</li>
+                    <li style="margin-bottom: 15px;"><i class="fas fa-check" style="color: var(--g-green);"></i> 200+ Aziende digitalizzate</li>
+                    <li><i class="fas fa-check" style="color: var(--g-green);"></i> Focus su PMI e Artigianato</li>
+                </ul>
+            </div>
+            <div class="slide-content">
+                <h2>L'Era dell'AI</h2>
+                <p>Gemini in Google Workspace</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
+                    <div>
+                        <h3>Testo</h3>
+                        <p style="font-size: 16px;">Sintesi email, bozze solleciti, verbali meet.</p>
+                    </div>
+                    <div>
+                        <h3>Immagini</h3>
+                        <p style="font-size: 16px;">Generazione asset per marketing e docs.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-content">
+                <h2>Il Muro di Google</h2>
+                <p>Cosa NON fa e come lo risolviamo</p>
+                <ul style="color: var(--g-red);">
+                    <li>Mancata integrazione TeamSystem</li>
+                    <li>Zero tracking ore tecnici</li>
+                    <li>No WhatsApp Automation</li>
+                </ul>
+                <p style="margin-top: 20px; color: var(--g-green);">✓ Risolto con App Proprietaria Studio Marini</p>
+            </div>
+
+            <div class="slide-controls">
+                <button class="btn btn-nav" onclick="changeSlide(-1)"><i class="fas fa-arrow-left"></i></button>
+                <span id="slideCounter">Slide 1 / 4</span>
+                <button class="btn btn-nav" onclick="changeSlide(1)"><i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="roadmap"><i class="fas fa-route"></i> La tua Roadmap</h2>
+        <div class="card">
+            <span class="badge badge-cloud">I Tuoi Progressi</span>
+            <h3>Traccia il tuo percorso formativo</h3>
+            <p style="font-size: 14px; margin-bottom: 30px;">Completa i laboratori per sbloccare nuovi contenuti</p>
+            <div id="checklistContainer">
+                <div class="loader" style="width:30px; height:30px; margin: 20px auto;"></div>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="risorse"><i class="fas fa-book"></i> Risorse & Link Utili</h2>
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <a href="https://workspace.google.com" target="_blank" class="card" style="text-decoration: none; text-align: center; padding: 30px;">
+                <i class="fab fa-google" style="font-size: 40px; color: var(--g-blue); margin-bottom: 15px;"></i>
+                <h4 style="color: var(--text); margin: 0;">Google Workspace</h4>
+                <p style="font-size: 12px; margin-top: 10px;">Gestione Cloud</p>
+            </a>
+            <a href="https://stripe.com" target="_blank" class="card" style="text-decoration: none; text-align: center; padding: 30px;">
+                <i class="fab fa-stripe" style="font-size: 40px; color: #635bff; margin-bottom: 15px;"></i>
+                <h4 style="color: var(--text); margin: 0;">Stripe</h4>
+                <p style="font-size: 12px; margin-top: 10px;">Pagamenti Digitali</p>
+            </a>
+            <a href="https://workspace.google.com/business/" target="_blank" class="card" style="text-decoration: none; text-align: center; padding: 30px;">
+                <i class="fas fa-star" style="font-size: 40px; color: var(--g-yellow); margin-bottom: 15px;"></i>
+                <h4 style="color: var(--text); margin: 0;">Workspace Premium</h4>
+                <p style="font-size: 12px; margin-top: 10px;">Funzionalità AI</p>
+            </a>
+            <div class="card" style="text-align: center; padding: 30px; cursor: pointer;">
+                <i class="fas fa-file-pdf" style="font-size: 40px; color: var(--g-red); margin-bottom: 15px;"></i>
+                <h4 style="color: var(--text); margin: 0;">Manuale Corso</h4>
+                <p style="font-size: 12px; margin-top: 10px;">Download PDF</p>
+            </div>
+        </div>
+
+        <h2 class="section-title"><i class="fas fa-history"></i> Storico Prompt Personali</h2>
+        <div id="publicWall" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;"></div>
+
+    </div>
+
+    <footer>
+        <p>© 2026 Studio Marini Formazione • Trasformiamo il tempo in valore.</p>
+    </footer>
+
+    <script type="module">
+        import { initAuth, initApp, loadChecklist, loadWall } from './js/app.js';
+        
+        initAuth(() => {
+            loadChecklist();
+            loadWall();
+        });
+    </script>
+</body>
+
+</html>
