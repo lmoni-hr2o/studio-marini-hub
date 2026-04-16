@@ -28,6 +28,10 @@ export function changeSlide(dir) {
     currentSlide = (currentSlide + dir + slides.length) % slides.length;
     slides[currentSlide].classList.add('active');
     counter.innerText = `Slide ${currentSlide + 1} / ${slides.length}`;
+    
+    if (window.presenterWindow && !window.presenterWindow.closed) {
+        window.presenterWindow.updatePresenterView(currentSlide + 1, slides.length);
+    }
 }
 
 export function toggleFullscreen() {
@@ -66,13 +70,130 @@ document.addEventListener('keydown', (e) => {
 });
 
 export function togglePresenterMode() {
-    const viewer = document.getElementById('viewer');
-    const badge = document.getElementById('presenterMode');
+    if (window.presenterWindow && !window.presenterWindow.closed) {
+        window.presenterWindow.close();
+        window.presenterWindow = null;
+        document.getElementById('presenterMode').textContent = 'Modalità Presentatore';
+        document.getElementById('presenterMode').style.background = 'var(--g-blue)';
+        return;
+    }
     
-    presenterMode = !presenterMode;
-    viewer.classList.toggle('presenter-mode', presenterMode);
-    badge.textContent = presenterMode ? 'Presentatore ON' : 'Modalità Presentatore';
-    badge.style.background = presenterMode ? 'var(--g-green)' : 'var(--g-blue)';
+    const slideContents = Array.from(slides).map(slide => {
+        const h2 = slide.querySelector('h2')?.textContent || '';
+        const p = slide.querySelector('p')?.textContent || '';
+        return { h2, p };
+    });
+    
+    window.presenterWindow = window.open('', 'PresenterView', 'width=1200,height=800');
+    
+    const presenterHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Presenter View - Studio Marini</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .timer { font-size: 48px; font-weight: bold; color: #4285f4; }
+            .slides-container { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; }
+            .slide-box { background: #333; border-radius: 12px; padding: 15px; text-align: center; }
+            .slide-box h4 { color: #888; margin-bottom: 10px; font-size: 14px; }
+            .slide-box.current { border: 3px solid #4285f4; }
+            .slide-preview { background: #202124; border-radius: 8px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 10px; }
+            .slide-preview.current { height: 200px; }
+            .slide-preview h2 { font-size: 14px; color: #4285f4; margin-bottom: 5px; }
+            .slide-preview p { font-size: 10px; color: #aaa; }
+            .slide-preview .title-small { font-size: 12px; color: #666; }
+            .notes { background: #333; border-radius: 12px; padding: 20px; margin-top: 20px; }
+            .notes h4 { color: #888; margin-bottom: 10px; }
+            .notes textarea { width: 100%; height: 80px; background: #222; border: none; color: white; padding: 10px; border-radius: 8px; font-size: 14px; }
+            .controls { display: flex; gap: 10px; margin-top: 20px; justify-content: center; }
+            .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+            .btn-prev { background: #ea4335; color: white; }
+            .btn-next { background: #34a853; color: white; }
+            .btn-timer { background: #fbbc04; color: black; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="timer" id="timer">00:00:00</div>
+            <div style="font-size: 20px;">
+                <span style="color:#888">Slide:</span> <span id="slideNum">1</span> / <span id="totalSlides">4</span>
+            </div>
+        </div>
+        <div class="slides-container">
+            <div class="slide-box">
+                <h4>PRECEDENTE</h4>
+                <div class="slide-preview" id="prevSlide"></div>
+            </div>
+            <div class="slide-box current">
+                <h4>CORRENTE</h4>
+                <div class="slide-preview current" id="currentSlide"></div>
+            </div>
+            <div class="slide-box">
+                <h4>SUCCESSIVA</h4>
+                <div class="slide-preview" id="nextSlide"></div>
+            </div>
+        </div>
+        <div class="notes">
+            <h4>NOTE DEL PRESENTATORE</h4>
+            <textarea id="notes" placeholder="Scrivi le tue note qui... Premi CTRL+S per salvare."></textarea>
+        </div>
+        <div class="controls">
+            <button class="btn btn-prev" onclick="window.opener.changeSlide(-1)"><i class="fas fa-arrow-left"></i> Precedente</button>
+            <button class="btn btn-timer" onclick="resetTimer()"><i class="fas fa-redo"></i> Reset Timer</button>
+            <button class="btn btn-next" onclick="window.opener.changeSlide(1)">Successiva <i class="fas fa-arrow-right"></i></button>
+        </div>
+        <script>
+            const slideData = ${JSON.stringify(slideContents)};
+            let timerInterval;
+            let seconds = 0;
+            
+            function updateView(curr, total) {
+                document.getElementById('slideNum').textContent = curr;
+                document.getElementById('totalSlides').textContent = total;
+                
+                const prevIdx = curr - 2;
+                const nextIdx = curr;
+                
+                document.getElementById('prevSlide').innerHTML = prevIdx >= 0 
+                    ? '<h2>' + slideData[prevIdx].h2 + '</h2><p>' + slideData[prevIdx].p.substring(0,50) + '</p>'
+                    : '<span class="title-small">Nessuna</span>';
+                    
+                document.getElementById('currentSlide').innerHTML = '<h2>' + slideData[curr-1].h2 + '</h2><p>' + slideData[curr-1].p + '</p>';
+                
+                document.getElementById('nextSlide').innerHTML = nextIdx < slideData.length 
+                    ? '<h2>' + slideData[nextIdx].h2 + '</h2><p>' + slideData[nextIdx].p.substring(0,50) + '</p>'
+                    : '<span class="title-small">Nessuna</span>';
+            }
+            
+            function startTimer() {
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    const h = Math.floor(seconds / 3600).toString().padStart(2,'0');
+                    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2,'0');
+                    const s = (seconds % 60).toString().padStart(2,'0');
+                    document.getElementById('timer').textContent = h + ':' + m + ':' + s;
+                }, 1000);
+            }
+            
+            function resetTimer() { seconds = 0; document.getElementById('timer').textContent = '00:00:00'; }
+            
+            startTimer();
+            window.updatePresenterView = updateView;
+            updateView(1, slideData.length);
+        </script>
+    </body>
+    </html>
+    `;
+    
+    window.presenterWindow.document.write(presenterHTML);
+    window.presenterWindow.document.close();
+    
+    document.getElementById('presenterMode').textContent = 'Presentatore ON';
+    document.getElementById('presenterMode').style.background = 'var(--g-green)';
 }
 
 export function openTab(tabId) {
