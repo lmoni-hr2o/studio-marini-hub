@@ -234,7 +234,8 @@
         window.selectModule = function(moduleId) {
             currentModule = moduleId;
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event?.target?.closest('.nav-item')?.classList.add('active');
+            const activeBtn = document.querySelector('.nav-item[onclick*="' + moduleId + '"]');
+            if (activeBtn) activeBtn.classList.add('active');
             renderModule(moduleId);
             syncPresentationSection(0, 'intro', 'Studio Marini', '<p>Benvenuto al corso!</p>', modulesData[moduleId].title);
         };
