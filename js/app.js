@@ -30,7 +30,10 @@ export function changeSlide(dir) {
     counter.innerText = `Slide ${currentSlide + 1} / ${slides.length}`;
     
     if (window.presenterWindow && !window.presenterWindow.closed) {
-        window.presenterWindow.updatePresenterView(currentSlide + 1, slides.length);
+        window.presenterWindow.postMessage({type: 'slideChange', index: currentSlide}, '*');
+    }
+    if (window.presentationWindow && !presentationWindow.closed) {
+        window.presentationWindow.updateSlide(currentSlide);
     }
 }
 
@@ -73,6 +76,10 @@ export function togglePresenterMode() {
     if (window.presenterWindow && !window.presenterWindow.closed) {
         window.presenterWindow.close();
         window.presenterWindow = null;
+        if (window.presentationWindow) {
+            window.presentationWindow.close();
+            window.presentationWindow = null;
+        }
         document.getElementById('presenterMode').textContent = 'Modalità Presentatore';
         document.getElementById('presenterMode').style.background = 'var(--g-blue)';
         return;
@@ -81,10 +88,78 @@ export function togglePresenterMode() {
     const slideContents = Array.from(slides).map(slide => {
         const h2 = slide.querySelector('h2')?.textContent || '';
         const p = slide.querySelector('p')?.textContent || '';
-        return { h2, p };
+        const html = slide.innerHTML;
+        return { h2, p, html };
     });
     
-    window.presenterWindow = window.open('', 'PresenterView', 'width=1200,height=800');
+    // Open presentation window (fullscreen on external display if available)
+    window.presentationWindow = window.open('', 'Presentation', 'width=800,height=600');
+    
+    const presentationHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Presentazione - Studio Marini</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { background: #202124; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+            .slide { width: 100%; height: 100%; padding: 60px; display: none; flex-direction: column; justify-content: center; color: white; }
+            .slide.active { display: flex; }
+            h2 { font-size: 64px; color: #4285f4; margin-bottom: 30px; }
+            p { font-size: 32px; color: #9aa0a6; }
+            ul { font-size: 28px; color: #bdc1c6; margin-top: 20px; }
+            .logo { position: absolute; bottom: 30px; right: 30px; color: #4285f4; font-size: 24px; }
+        </style>
+    </head>
+    <body>
+        ${slideContents.map((s, i) => `
+        <div class="slide ${i === 0 ? 'active' : ''}" data-index="${i}">
+            ${s.html}
+        </div>
+        `).join('')}
+        <div class="logo">Studio Marini</div>
+        <script>
+            const slideEls = document.querySelectorAll('.slide');
+            let currentSlide = 0;
+            
+            function showSlide(idx) {
+                slideEls.forEach((s, i) => s.classList.toggle('active', i === idx));
+            }
+            
+            window.updateSlide = function(idx) {
+                currentSlide = idx;
+                showSlide(idx);
+            };
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    currentSlide = (currentSlide + 1) % slideEls.length;
+                    showSlide(currentSlide);
+                    window.opener?.postMessage({type: 'slideChange', index: currentSlide}, '*');
+                }
+                if (e.key === 'ArrowLeft') {
+                    currentSlide = (currentSlide - 1 + slideEls.length) % slideEls.length;
+                    showSlide(currentSlide);
+                    window.opener?.postMessage({type: 'slideChange', index: currentSlide}, '*');
+                }
+            });
+        </script>
+    </body>
+    </html>
+    `;
+    
+    window.presentationWindow.document.write(presentationHTML);
+    window.presentationWindow.document.close();
+    
+    // Try to fullscreen the presentation window
+    setTimeout(() => {
+        try {
+            window.presentationWindow.focus();
+        } catch(e) {}
+    }, 500);
+    
+    // Open presenter view
+    window.presenterWindow = window.open('', 'PresenterView', 'width=1200,height=900');
     
     const presenterHTML = `
     <!DOCTYPE html>
@@ -97,31 +172,46 @@ export function togglePresenterMode() {
             body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 20px; }
             .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
             .timer { font-size: 48px; font-weight: bold; color: #4285f4; }
-            .slides-container { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 20px; }
-            .slide-box { background: #333; border-radius: 12px; padding: 15px; text-align: center; }
-            .slide-box h4 { color: #888; margin-bottom: 10px; font-size: 14px; }
+            .timer.running { animation: pulse 2s infinite; }
+            @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+            .info-bar { display: flex; gap: 20px; align-items: center; }
+            .slide-counter { font-size: 24px; background: #333; padding: 10px 20px; border-radius: 8px; }
+            .display-hint { background: #fbbc04; color: black; padding: 10px 15px; border-radius: 8px; font-size: 14px; }
+            .slides-container { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px; margin-bottom: 15px; }
+            .slide-box { background: #333; border-radius: 12px; padding: 12px; text-align: center; }
             .slide-box.current { border: 3px solid #4285f4; }
-            .slide-preview { background: #202124; border-radius: 8px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 10px; }
-            .slide-preview.current { height: 200px; }
-            .slide-preview h2 { font-size: 14px; color: #4285f4; margin-bottom: 5px; }
-            .slide-preview p { font-size: 10px; color: #aaa; }
-            .slide-preview .title-small { font-size: 12px; color: #666; }
-            .notes { background: #333; border-radius: 12px; padding: 20px; margin-top: 20px; }
-            .notes h4 { color: #888; margin-bottom: 10px; }
-            .notes textarea { width: 100%; height: 80px; background: #222; border: none; color: white; padding: 10px; border-radius: 8px; font-size: 14px; }
-            .controls { display: flex; gap: 10px; margin-top: 20px; justify-content: center; }
-            .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+            .slide-box h4 { color: #888; margin-bottom: 8px; font-size: 12px; }
+            .slide-preview { background: #202124; border-radius: 8px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; overflow: hidden; }
+            .slide-preview.current { height: 180px; border: 2px solid #4285f4; }
+            .slide-preview h2 { font-size: 12px; color: #4285f4; }
+            .slide-preview p { font-size: 9px; color: #aaa; }
+            .slide-preview .empty { color: #555; font-size: 11px; }
+            .notes { background: #333; border-radius: 12px; padding: 15px; }
+            .notes h4 { color: #888; margin-bottom: 8px; font-size: 12px; }
+            .notes textarea { width: 100%; height: 70px; background: #222; border: none; color: white; padding: 10px; border-radius: 8px; font-size: 13px; resize: none; }
+            .controls { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
+            .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
             .btn-prev { background: #ea4335; color: white; }
             .btn-next { background: #34a853; color: white; }
             .btn-timer { background: #fbbc04; color: black; }
+            .btn-stop { background: #666; color: white; }
+            .btn:hover { opacity: 0.9; }
+            .fullscreen-hint { background: #222; border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; color: #aaa; text-align: center; }
         </style>
     </head>
     <body>
+        <div class="fullscreen-hint">
+            <i class="fas fa-desktop"></i> Trascina la finestra "Presentazione" sullo schermo esterno e premi F per fullscreen
+        </div>
         <div class="header">
-            <div class="timer" id="timer">00:00:00</div>
-            <div style="font-size: 20px;">
-                <span style="color:#888">Slide:</span> <span id="slideNum">1</span> / <span id="totalSlides">4</span>
+            <div>
+                <button class="btn btn-timer" onclick="toggleTimer()" id="timerBtn"><i class="fas fa-play"></i> Start</button>
             </div>
+            <div class="info-bar">
+                <span style="color:#888">Slide:</span>
+                <div class="slide-counter"><span id="slideNum">1</span> / <span id="totalSlides">${slideContents.length}</span></div>
+            </div>
+            <div class="timer" id="timer">00:00:00</div>
         </div>
         <div class="slides-container">
             <div class="slide-box">
@@ -138,51 +228,84 @@ export function togglePresenterMode() {
             </div>
         </div>
         <div class="notes">
-            <h4>NOTE DEL PRESENTATORE</h4>
-            <textarea id="notes" placeholder="Scrivi le tue note qui... Premi CTRL+S per salvare."></textarea>
+            <h4>NOTE</h4>
+            <textarea id="notes" placeholder="Scrivi le tue note qui..."></textarea>
         </div>
         <div class="controls">
-            <button class="btn btn-prev" onclick="window.opener.changeSlide(-1)"><i class="fas fa-arrow-left"></i> Precedente</button>
-            <button class="btn btn-timer" onclick="resetTimer()"><i class="fas fa-redo"></i> Reset Timer</button>
-            <button class="btn btn-next" onclick="window.opener.changeSlide(1)">Successiva <i class="fas fa-arrow-right"></i></button>
+            <button class="btn btn-prev" onclick="goPrev()"><i class="fas fa-arrow-left"></i> Precedente</button>
+            <button class="btn btn-stop" onclick="window.close()"><i class="fas fa-stop"></i> Esci</button>
+            <button class="btn btn-next" onclick="goNext()">Successiva <i class="fas fa-arrow-right"></i></button>
         </div>
         <script>
             const slideData = ${JSON.stringify(slideContents)};
-            let timerInterval;
+            let currentSlide = 0;
+            let timerInterval = null;
             let seconds = 0;
+            let timerRunning = false;
             
             function updateView(curr, total) {
                 document.getElementById('slideNum').textContent = curr;
-                document.getElementById('totalSlides').textContent = total;
                 
                 const prevIdx = curr - 2;
                 const nextIdx = curr;
                 
                 document.getElementById('prevSlide').innerHTML = prevIdx >= 0 
-                    ? '<h2>' + slideData[prevIdx].h2 + '</h2><p>' + slideData[prevIdx].p.substring(0,50) + '</p>'
-                    : '<span class="title-small">Nessuna</span>';
+                    ? '<h2>' + slideData[prevIdx].h2 + '</h2><p>' + (slideData[prevIdx].p || '').substring(0,40) + '</p>'
+                    : '<span class="empty">Nessuna</span>';
                     
-                document.getElementById('currentSlide').innerHTML = '<h2>' + slideData[curr-1].h2 + '</h2><p>' + slideData[curr-1].p + '</p>';
+                document.getElementById('currentSlide').innerHTML = '<h2>' + slideData[curr-1].h2 + '</h2><p>' + (slideData[curr-1].p || '').substring(0,80) + '</p>';
                 
                 document.getElementById('nextSlide').innerHTML = nextIdx < slideData.length 
-                    ? '<h2>' + slideData[nextIdx].h2 + '</h2><p>' + slideData[nextIdx].p.substring(0,50) + '</p>'
-                    : '<span class="title-small">Nessuna</span>';
+                    ? '<h2>' + slideData[nextIdx].h2 + '</h2><p>' + (slideData[nextIdx].p || '').substring(0,40) + '</p>'
+                    : '<span class="empty">Nessuna</span>';
             }
             
-            function startTimer() {
-                timerInterval = setInterval(() => {
-                    seconds++;
-                    const h = Math.floor(seconds / 3600).toString().padStart(2,'0');
-                    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2,'0');
-                    const s = (seconds % 60).toString().padStart(2,'0');
-                    document.getElementById('timer').textContent = h + ':' + m + ':' + s;
-                }, 1000);
+            function goPrev() {
+                currentSlide = (currentSlide - 1 + slideData.length) || slideData.length;
+                updateView(currentSlide, slideData.length);
+                window.presentationWindow?.updateSlide(currentSlide - 1);
             }
             
-            function resetTimer() { seconds = 0; document.getElementById('timer').textContent = '00:00:00'; }
+            function goNext() {
+                currentSlide = (currentSlide % slideData.length) + 1;
+                updateView(currentSlide, slideData.length);
+                window.presentationWindow?.updateSlide(currentSlide - 1);
+            }
             
-            startTimer();
-            window.updatePresenterView = updateView;
+            function toggleTimer() {
+                const btn = document.getElementById('timerBtn');
+                const timerEl = document.getElementById('timer');
+                if (timerRunning) {
+                    clearInterval(timerInterval);
+                    timerRunning = false;
+                    btn.innerHTML = '<i class="fas fa-play"></i> Start';
+                    timerEl.classList.remove('running');
+                } else {
+                    timerInterval = setInterval(() => {
+                        seconds++;
+                        const h = Math.floor(seconds / 3600).toString().padStart(2,'0');
+                        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2,'0');
+                        const s = (seconds % 60).toString().padStart(2,'0');
+                        timerEl.textContent = h + ':' + m + ':' + s;
+                    }, 1000);
+                    timerRunning = true;
+                    btn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                    timerEl.classList.add('running');
+                }
+            }
+            
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') goPrev();
+                if (e.key === 'ArrowRight' || e.key === ' ') goNext();
+            });
+            
+            window.addEventListener('message', (e) => {
+                if (e.data?.type === 'slideChange') {
+                    currentSlide = e.data.index + 1;
+                    updateView(currentSlide, slideData.length);
+                }
+            });
+            
             updateView(1, slideData.length);
         </script>
     </body>
