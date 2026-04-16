@@ -146,18 +146,27 @@
         </div>
     </div>
 
-    <!-- Modal for Module Management -->
+    <!-- Modal for Module Management - Full Editor -->
     <div id="modal-moduli" class="modal">
-        <div class="modal-content" style="width: 600px;">
+        <div class="modal-content" style="width: 90%; max-width: 1200px; max-height: 90vh;">
             <div class="modal-header">
-                <h2><i class="fas fa-cogs"></i> Gestisci Moduli</h2>
+                <h2><i class="fas fa-cogs"></i> Gestore Moduli Completo</h2>
                 <button class="close-modal" onclick="closeModal('moduli')">&times;</button>
             </div>
-            <div class="modal-body">
-                <button class="btn btn-green" style="margin-bottom: 20px;" onclick="addNewModule()">
-                    <i class="fas fa-plus"></i> Nuovo Modulo
-                </button>
-                <div id="modules-list"></div>
+            <div class="modal-body" style="display: flex; gap: 20px; height: 70vh;">
+                <!-- Module List -->
+                <div style="width: 250px; border-right: 1px solid var(--border); padding-right: 20px; overflow-y: auto;">
+                    <button class="btn btn-green" style="width: 100%; margin-bottom: 15px;" onclick="createNewModule()">
+                        <i class="fas fa-plus"></i> Nuovo Modulo
+                    </button>
+                    <div id="modules-list"></div>
+                </div>
+                <!-- Module Editor -->
+                <div style="flex: 1; overflow-y: auto;">
+                    <div id="module-editor">
+                        <p style="color: #666; text-align: center; padding: 40px;">Seleziona un modulo per modificare</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -271,6 +280,13 @@
             const module = modulesData[currentModule];
             const section = module.sections.find(s => s.id === sectionId);
             
+            // Use custom content from module data, or fallback to default
+            const customContent = section.content || (section.type === 'presentation' ? 
+                '<h2>' + (section.title || '').replace('Presentazione: ', '') + '</h2><ul><li>Contenuto della presentazione...</li></ul>' : 
+                renderLabContent(sectionId));
+            
+            const linkHtml = section.link ? `<div style="margin-top:20px;"><a href="${section.link}" target="_blank" class="btn btn-outline"><i class="fas fa-external-link-alt"></i> Apri Risorsa</a></div>` : '';
+            
             const container = document.getElementById('module-view');
             container.innerHTML = `
                 <div class="section-view">
@@ -282,14 +298,17 @@
                             ${section.type === 'presentation' ? 'Presentazione' : 'Laboratorio'}
                         </span>
                         <h1>${section.title}</h1>
+                        ${section.time ? `<span style="color:#666; font-size:14px;">${section.time}</span>` : ''}
                     </div>
                     <div class="section-body">
-                        ${section.type === 'presentation' ? renderPresentationContent(sectionId) : renderLabContent(sectionId)}
+                        ${customContent}
+                        ${linkHtml}
                     </div>
                 </div>
             `;
             
-            const contentHtml = section.type === 'presentation' ? renderPresentationContent(sectionId) : renderLabContent(sectionId);
+            // Sync to presentation
+            const contentHtml = section.type === 'presentation' ? (section.content || getDynamicContent(currentModule, sectionId)) : customContent;
             syncPresentationSection(index, section.type, section.title, contentHtml, section.time || (section.type === 'presentation' ? 'Lezione' : 'Laboratorio'));
         };
 
@@ -450,52 +469,146 @@ function renderLabContent(sectionId) {
         window.togglePresenterMode = togglePresenterMode;
         window.startPresentation = startPresentation;
         
+        let editingModuleId = null;
+        
         function renderModulesList() {
             const list = document.getElementById('modules-list');
             list.innerHTML = '';
             Object.keys(modulesData).forEach(key => {
                 const mod = modulesData[key];
                 list.innerHTML += `
-                    <div class="module-edit-item">
+                    <div class="module-edit-item" style="cursor:pointer; ${editingModuleId === key ? 'background:#e8f0fe;' : ''}" onclick="loadModuleEditor('${key}')">
                         <div>
                             <strong>${mod.title}</strong>
                             <span style="font-size:12px; color:#666">(${mod.duration})</span>
-                        </div>
-                        <div>
-                            <button class="btn btn-outline" style="padding:5px 10px;" onclick="editModule('${key}')"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-outline" style="padding:5px 10px; color:#ea4335;" onclick="deleteModule('${key}')"><i class="fas fa-trash"></i></button>
+                            <br><span style="font-size:11px; color:#888">${mod.sections?.length || 0} sezioni</span>
                         </div>
                     </div>
                 `;
             });
         }
         
-        window.addNewModule = function() {
-            const id = 'mod' + (Object.keys(modulesData).length + 1);
+        window.loadModuleEditor = function(moduleId) {
+            editingModuleId = moduleId;
+            const mod = modulesData[moduleId];
+            const editor = document.getElementById('module-editor');
+            
+            let sectionsHtml = '';
+            (mod.sections || []).forEach((section, idx) => {
+                sectionsHtml += `
+                    <div style="background:#f8f9fa; padding:15px; border-radius:12px; margin-bottom:15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <strong>Sezione ${idx + 1}</strong>
+                            <div>
+                                <select onchange="updateSection('${moduleId}', ${idx}, 'type', this.value)" style="padding:5px; border-radius:6px;">
+                                    <option value="presentation" ${section.type === 'presentation' ? 'selected' : ''}>Presentazione</option>
+                                    <option value="lab" ${section.type === 'lab' ? 'selected' : ''}>Laboratorio</option>
+                                </select>
+                                <button class="btn btn-outline" style="padding:5px 10px; color:#ea4335;" onclick="deleteSection('${moduleId}', ${idx})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <input type="text" value="${section.title || ''}" placeholder="Titolo sezione" 
+                            onchange="updateSection('${moduleId}', ${idx}, 'title', this.value)"
+                            style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+                        <input type="text" value="${section.time || ''}" placeholder="Durata (es. Ora 1, Lab 1)" 
+                            onchange="updateSection('${moduleId}', ${idx}, 'time', this.value)"
+                            style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+                        <textarea placeholder="Contenuto HTML della presentazione/laboratorio..." 
+                            onchange="updateSection('${moduleId}', ${idx}, 'content', this.value)"
+                            style="width:100%; height:100px; padding:10px; border-radius:8px; border:1px solid #ddd;">${section.content || ''}</textarea>
+                        <div style="margin-top:10px;">
+                            <input type="text" value="${section.link || ''}" placeholder="Link risorsa (es. video, documento)"
+                                onchange="updateSection('${moduleId}', ${idx}, 'link', this.value)"
+                                style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                        </div>
+                    </div>
+                `;
+            });
+            
+            editor.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <input type="text" id="edit-module-title" value="${mod.title}" 
+                        onchange="updateModuleMeta('${moduleId}', 'title', this.value)"
+                        style="font-size:24px; font-weight:bold; padding:10px; border-radius:8px; border:1px solid #ddd; flex:1; margin-right:20px;">
+                    <input type="text" id="edit-module-duration" value="${mod.duration}" 
+                        onchange="updateModuleMeta('${moduleId}', 'duration', this.value)"
+                        style="width:120px; padding:10px; border-radius:8px; border:1px solid #ddd;">
+                </div>
+                
+                <h3 style="margin-bottom:15px;">Sezioni del Modulo</h3>
+                ${sectionsHtml}
+                
+                <button class="btn btn-outline" onclick="addSection('${moduleId}')" style="width:100%; margin-top:10px;">
+                    <i class="fas fa-plus"></i> Aggiungi Sezione
+                </button>
+                
+                <div style="margin-top:30px; padding:20px; background:#fff3cd; border-radius:12px;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Importante</h4>
+                    <p style="font-size:14px;">Dopo aver modificato, scorri in alto e seleziona di nuovo il modulo per vedere le modifiche nella dashboard.</p>
+                    <button class="btn btn-blue" onclick="closeModal('moduli'); selectModule('${moduleId}');" style="margin-top:10px;">
+                        Visualizza Modulo
+                    </button>
+                </div>
+            `;
+            
+            renderModulesList();
+        }
+        
+        window.updateModuleMeta = function(moduleId, field, value) {
+            modulesData[moduleId][field] = value;
+            saveModulesToStorage();
+        }
+        
+        window.updateSection = function(moduleId, sectionIdx, field, value) {
+            if (!modulesData[moduleId].sections[sectionIdx]) return;
+            modulesData[moduleId].sections[sectionIdx][field] = value;
+            saveModulesToStorage();
+        }
+        
+        window.addSection = function(moduleId) {
+            const newId = moduleId + '-sec' + (modulesData[moduleId].sections.length + 1);
+            modulesData[moduleId].sections.push({
+                id: newId,
+                title: 'Nuova Sezione',
+                type: 'presentation',
+                time: 'Lezione',
+                content: '<ul><li>Inserisci i punti della lezione...</li></ul>'
+            });
+            saveModulesToStorage();
+            loadModuleEditor(moduleId);
+        }
+        
+        window.deleteSection = function(moduleId, sectionIdx) {
+            if (confirm('Elimina questa sezione?')) {
+                modulesData[moduleId].sections.splice(sectionIdx, 1);
+                saveModulesToStorage();
+                loadModuleEditor(moduleId);
+            }
+        }
+        
+        window.createNewModule = function() {
+            const id = 'custom-mod-' + Date.now();
             modulesData[id] = {
                 title: 'Nuovo Modulo',
                 duration: '2 ore',
                 sections: [
-                    { id: id + '-1', title: 'Presentazione', type: 'presentation', time: 'Lezione 1' },
-                    { id: id + '-1-lab', title: 'Laboratorio', type: 'lab' }
+                    { id: id + '-1', title: 'Presentazione Iniziale', type: 'presentation', time: 'Ora 1', content: '<ul><li>Contenuto della presentazione...</li></ul>' },
+                    { id: id + '-1-lab', title: 'Laboratorio Pratico', type: 'lab', time: 'Ora 2', content: '<ol><li>Primo passo del laboratorio...</li></ol>' }
                 ]
             };
-            renderModulesList();
             saveModulesToStorage();
-        };
-        
-        window.editModule = function(id) {
-            const mod = modulesData[id];
-            const newTitle = prompt('Titolo del modulo:', mod.title);
-            if (newTitle) {
-                mod.title = newTitle;
-                renderModulesList();
-                saveModulesToStorage();
-            }
-        };
+            loadModuleEditor(id);
+        }
         
         window.deleteModule = function(id) {
-            if (confirm('Elimina questo modulo?')) {
+            if (confirm('Elimina questo modulo completamente?')) {
+                delete modulesData[id];
+                editingModuleId = null;
+                document.getElementById('module-editor').innerHTML = '<p style="color:#666;text-align:center;padding:40px;">Seleziona un modulo per modificare</p>';
+                saveModulesToStorage();
+                renderModulesList();
+            }
+        };
                 delete modulesData[id];
                 renderModulesList();
                 saveModulesToStorage();
