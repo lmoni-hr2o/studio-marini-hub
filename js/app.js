@@ -315,21 +315,6 @@ export function togglePresenterMode() {
     document.getElementById('presenterMode').style.background = 'var(--g-green)';
 }
 
-export function openTab(tabId) {
-    const contents = document.querySelectorAll('.tab-content');
-    contents.forEach(content => content.classList.remove('active'));
-    
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    
-    document.getElementById(tabId).classList.add('active');
-    
-    const clickedBtn = document.querySelector(`[onclick="openTab('${tabId}')"]`);
-    if (clickedBtn) clickedBtn.classList.add('active');
-    
-    document.getElementById(tabId).scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 export function copyPrompt(btn) {
     const promptCard = btn.closest('.prompt-card');
     const promptText = promptCard.querySelector('code').innerText;
@@ -348,7 +333,33 @@ export function copyPrompt(btn) {
     });
 }
 
-const checklistItems = [
+export function openTab(tabId) {
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+    
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    
+    const clickedBtn = document.querySelector('[onclick="openTab(\'' + tabId + '\')"]');
+    if (clickedBtn) clickedBtn.classList.add('active');
+    
+    document.getElementById(tabId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    const sectionMap = {
+        'corso-base': 5,
+        'modulo-1': 5,
+        'modulo-2': 5,
+        'modulo-3': 5
+    };
+    
+    if (sectionMap[tabId] !== undefined) {
+        syncPresentation(sectionMap[tabId]);
+    }
+}
+
+export function syncPresentation(index) {
     { id: 'm1-lab1', label: 'Completa Lab 1: Configura Agenda' },
     { id: 'm1-lab2', label: 'Completa Lab 2: Crea Listino Servizi' },
     { id: 'm1-lab3', label: 'Completa Lab 3: Collega Stripe' },
