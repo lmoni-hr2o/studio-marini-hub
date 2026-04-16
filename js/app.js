@@ -359,7 +359,7 @@ export function openTab(tabId) {
     }
 }
 
-export function syncPresentation(index) {
+const checklistItems = [
     { id: 'm1-lab1', label: 'Completa Lab 1: Configura Agenda' },
     { id: 'm1-lab2', label: 'Completa Lab 2: Crea Listino Servizi' },
     { id: 'm1-lab3', label: 'Completa Lab 3: Collega Stripe' },
@@ -369,6 +369,13 @@ export function syncPresentation(index) {
     { id: 'm3-lab1', label: 'Completa Lab 7: Analisi PDF' },
     { id: 'm3-lab2', label: 'Completa Lab 8: Genera Documento' }
 ];
+
+export function syncPresentation(index) {
+    if (window.presentationWin && !window.presentationWin.closed) {
+        const channel = new BroadcastChannel('studio_marini_presentation');
+        channel.postMessage({action: 'sync', index: index});
+    }
+}
 
 export function loadChecklist() {
     const saved = localStorage.getItem(STORAGE_KEYS.checklist);
