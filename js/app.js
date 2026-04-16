@@ -1,49 +1,21 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-import { apiKey, appId, firebaseConfig } from './firebase.js';
+let user = { uid: 'local-user' };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let user = null;
+const STORAGE_KEYS = {
+    checklist: 'studio_marini_checklist',
+    history: 'studio_marini_history'
+};
 
 export function initAuth(callback) {
-    try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            signInWithCustomToken(auth, __initial_auth_token).then(() => callback());
-        } else {
-            signInAnonymously(auth).then(() => callback());
-        }
-    } catch (e) {
-        console.log('Modalità demo - nessun Firebase');
-        document.getElementById('loadingOverlay').style.display = 'none';
-        callback();
-    }
-
-    onAuthStateChanged(auth, (u) => {
-        user = u;
-        if (user) {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
-    });
+    document.getElementById('loadingOverlay').style.display = 'none';
+    callback();
 }
 
 export function getUser() {
     return user;
 }
 
-export function getDb() {
-    return db;
-}
-
 export function getAppId() {
-    return appId;
-}
-
-export function getApiKey() {
-    return apiKey;
+    return 'local';
 }
 
 let currentSlide = 0;
@@ -102,32 +74,8 @@ const checklistItems = [
 ];
 
 export function loadChecklist() {
-    if (!user) {
-        renderChecklistDemo();
-        return;
-    }
-    const ref = doc(db, 'artifacts', appId, 'users', user.uid, 'roadmap', 'checklist');
-    onSnapshot(ref, (snap) => {
-        const data = snap.exists() ? snap.data() : {};
-        renderChecklist(data);
-    }, err => console.error(err));
-}
-
-function renderChecklistDemo() {
-    const container = document.getElementById('checklistContainer');
-    container.innerHTML = '';
-    checklistItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'checklist-item';
-        div.innerHTML = `
-            <input type="checkbox" id="${item.id}" onchange="window.syncCheck('${item.id}', this.checked)">
-            <label for="${item.id}">${item.label}</label>
-        `;
-        container.appendChild(div);
-    });
-}
-
-function renderChecklist(data) {
+    const saved = localStorage.getItem(STORAGE_KEYS.checklist);
+    const data = saved ? JSON.parse(saved) : {};
     const container = document.getElementById('checklistContainer');
     container.innerHTML = '';
     checklistItems.forEach(item => {
@@ -142,39 +90,42 @@ function renderChecklist(data) {
     });
 }
 
-export async function syncCheck(id, status) {
-    if (!user) return;
-    const ref = doc(db, 'artifacts', appId, 'users', user.uid, 'roadmap', 'checklist');
-    await setDoc(ref, { [id]: status }, { merge: true });
+export function syncCheck(id, status) {
+    const saved = localStorage.getItem(STORAGE_KEYS.checklist);
+    const data = saved ? JSON.parse(saved) : {};
+    data[id] = status;
+    localStorage.setItem(STORAGE_KEYS.checklist, JSON.stringify(data));
 }
 
 export function loadWall() {
-    if (!user) {
-        renderWallDemo();
+    const saved = localStorage.getItem(STORAGE_KEYS.history);
+    const history = saved ? JSON.parse(saved) : [];
+    const wall = document.getElementById('publicWall');
+    wall.innerHTML = '';
+    
+    if (history.length === 0) {
+        wall.innerHTML = '<p style="color:var(--subtext); grid-column: 1/-1; text-align:center;">I tuoi prompt appariranno qui dopo aver usato i laboratori AI.</p>';
         return;
     }
-    const ref = collection(db, 'artifacts', appId, 'users', user.uid, 'history');
-    onSnapshot(ref, (snap) => {
-        const wall = document.getElementById('publicWall');
-        wall.innerHTML = '';
-        snap.forEach(doc => {
-            const d = doc.data();
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.style.padding = '20px';
-            card.innerHTML = `
-                <div class="badge badge-ai" style="margin-bottom:10px;">${d.type}</div>
-                <p style="font-size:13px; font-weight:bold;">"${d.prompt.substring(0, 50)}..."</p>
-                <div style="font-size:12px; color:var(--subtext); background:var(--bg); padding:10px; border-radius:10px;">${d.result.substring(0, 150)}...</div>
-            `;
-            wall.appendChild(card);
-        });
-    }, err => console.error(err));
+    
+    history.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.padding = '20px';
+        card.innerHTML = `
+            <div class="badge badge-ai" style="margin-bottom:10px;">${item.type}</div>
+            <p style="font-size:13px; font-weight:bold;">"${item.prompt.substring(0, 50)}..."</p>
+            <div style="font-size:12px; color:var(--subtext); background:var(--bg); padding:10px; border-radius:10px;">${item.result.substring(0, 150)}...</div>
+        `;
+        wall.appendChild(card);
+    });
 }
 
-function renderWallDemo() {
-    const wall = document.getElementById('publicWall');
-    wall.innerHTML = '<p style="color:var(--subtext); grid-column: 1/-1; text-align:center;">I tuoi prompt appariranno qui dopo aver usato i laboratori AI.</p>';
+function saveHistory(type, prompt, result) {
+    const saved = localStorage.getItem(STORAGE_KEYS.history);
+    const history = saved ? JSON.parse(saved) : [];
+    history.unshift({ type, prompt, result, ts: Date.now() });
+    localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(history.slice(0, 50)));
 }
 
 export async function generateAiText() {
@@ -190,7 +141,7 @@ export async function generateAiText() {
     output.innerText = "Gemini sta scrivendo per te...";
 
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBFyBviMx7rTNOonSDoU4gsH4oTq5qJ2hQ`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -199,17 +150,13 @@ export async function generateAiText() {
             })
         });
         const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Errore.";
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Errore nella generazione.";
         output.innerText = text;
-
-        await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'history'), {
-            type: 'Testo AI',
-            prompt: prompt,
-            result: text,
-            ts: Date.now()
-        });
+        
+        saveHistory('Testo AI', prompt, text);
+        loadWall();
     } catch (e) {
-        output.innerText = "Errore connessione.";
+        output.innerText = "Errore di connessione. Verifica la chiave API.";
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Genera Bozza';
@@ -228,7 +175,7 @@ export async function generateImage() {
     img.style.display = 'none';
 
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=AIzaSyBFyBviMx7rTNOonSDoU4gsH4oTq5qJ2hQ`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } })
@@ -238,13 +185,9 @@ export async function generateImage() {
             const b64 = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
             img.src = b64;
             img.style.display = 'block';
-
-            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'history'), {
-                type: 'Immagine AI',
-                prompt: prompt,
-                result: 'Immagine generata correttamente.',
-                ts: Date.now()
-            });
+            
+            saveHistory('Immagine AI', prompt, 'Immagine generata');
+            loadWall();
         }
     } catch (e) {
         alert("Errore generazione immagine.");
