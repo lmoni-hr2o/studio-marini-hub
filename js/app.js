@@ -28,13 +28,6 @@ export function changeSlide(dir) {
     currentSlide = (currentSlide + dir + slides.length) % slides.length;
     slides[currentSlide].classList.add('active');
     counter.innerText = `Slide ${currentSlide + 1} / ${slides.length}`;
-    
-    if (window.presenterWindow && !window.presenterWindow.closed) {
-        window.presenterWindow.postMessage({type: 'slideChange', index: currentSlide}, '*');
-    }
-    if (window.presentationWindow && !presentationWindow.closed) {
-        window.presentationWindow.updateSlide(currentSlide);
-    }
 }
 
 export function toggleFullscreen() {
@@ -76,9 +69,9 @@ export function togglePresenterMode() {
     if (window.presenterWindow && !window.presenterWindow.closed) {
         window.presenterWindow.close();
         window.presenterWindow = null;
-        if (window.presentationWindow) {
-            window.presentationWindow.close();
-            window.presentationWindow = null;
+        if (window.presentationWin) {
+            window.presentationWin.close();
+            window.presentationWin = null;
         }
         document.getElementById('presenterMode').textContent = 'Modalità Presentatore';
         document.getElementById('presenterMode').style.background = 'var(--g-blue)';
@@ -92,23 +85,27 @@ export function togglePresenterMode() {
         return { h2, p, html };
     });
     
-    // Open presentation window (fullscreen on external display if available)
-    window.presentationWindow = window.open('', 'Presentation', 'width=800,height=600');
+    const channel = new BroadcastChannel('studio_marini_presenter');
+    
+    window.presentationWin = window.open('', 'Presentation', 'width=1024,height=768');
     
     const presentationHTML = `
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Presentazione - Studio Marini</title>
+        <title>Presentazione</title>
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { background: #202124; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-            .slide { width: 100%; height: 100%; padding: 60px; display: none; flex-direction: column; justify-content: center; color: white; }
+            .slide { width: 100%; height: 100%; padding: 80px; display: none; flex-direction: column; justify-content: center; color: white; }
             .slide.active { display: flex; }
-            h2 { font-size: 64px; color: #4285f4; margin-bottom: 30px; }
-            p { font-size: 32px; color: #9aa0a6; }
-            ul { font-size: 28px; color: #bdc1c6; margin-top: 20px; }
-            .logo { position: absolute; bottom: 30px; right: 30px; color: #4285f4; font-size: 24px; }
+            h2 { font-size: 72px; color: #4285f4; margin-bottom: 40px; font-family: 'Poppins', sans-serif; }
+            p { font-size: 36px; color: #9aa0a6; }
+            ul { font-size: 32px; color: #bdc1c6; margin-top: 30px; }
+            .logo { position: absolute; bottom: 40px; right: 40px; color: #4285f4; font-size: 28px; font-family: 'Poppins', sans-serif; }
+            .controls { position: absolute; bottom: 20px; left: 20px; opacity: 0; transition: opacity 0.3s; }
+            body:hover .controls { opacity: 1; }
+            .controls button { background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
         </style>
     </head>
     <body>
@@ -118,7 +115,13 @@ export function togglePresenterMode() {
         </div>
         `).join('')}
         <div class="logo">Studio Marini</div>
+        <div class="controls">
+            <button onclick="channel.postMessage({action:'prev'})"><</button>
+            <button onclick="channel.postMessage({action:'next'})">></button>
+            <button onclick="toggleFS()">Fullscreen</button>
+        </div>
         <script>
+            const channel = new BroadcastChannel('studio_marini_presenter');
             const slideEls = document.querySelectorAll('.slide');
             let currentSlide = 0;
             
@@ -126,40 +129,47 @@ export function togglePresenterMode() {
                 slideEls.forEach((s, i) => s.classList.toggle('active', i === idx));
             }
             
-            window.updateSlide = function(idx) {
-                currentSlide = idx;
-                showSlide(idx);
+            function toggleFS() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+            
+            channel.onmessage = (e) => {
+                if (e.data.action === 'goto') {
+                    currentSlide = e.data.index;
+                    showSlide(currentSlide);
+                }
+                if (e.data.action === 'next') {
+                    currentSlide = (currentSlide + 1) % slideEls.length;
+                    showSlide(currentSlide);
+                }
+                if (e.data.action === 'prev') {
+                    currentSlide = (currentSlide - 1 + slideEls.length) % slideEls.length;
+                    showSlide(currentSlide);
+                }
             };
             
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowRight' || e.key === ' ') {
-                    currentSlide = (currentSlide + 1) % slideEls.length;
-                    showSlide(currentSlide);
-                    window.opener?.postMessage({type: 'slideChange', index: currentSlide}, '*');
-                }
-                if (e.key === 'ArrowLeft') {
-                    currentSlide = (currentSlide - 1 + slideEls.length) % slideEls.length;
-                    showSlide(currentSlide);
-                    window.opener?.postMessage({type: 'slideChange', index: currentSlide}, '*');
-                }
+                if (e.key === 'ArrowRight' || e.key === ' ') channel.postMessage({action:'next'});
+                if (e.key === 'ArrowLeft') channel.postMessage({action:'prev'});
+                if (e.key === 'f') toggleFS();
             });
         </script>
     </body>
     </html>
     `;
     
-    window.presentationWindow.document.write(presentationHTML);
-    window.presentationWindow.document.close();
+    window.presentationWin.document.write(presentationHTML);
+    window.presentationWin.document.close();
     
-    // Try to fullscreen the presentation window
     setTimeout(() => {
-        try {
-            window.presentationWindow.focus();
-        } catch(e) {}
-    }, 500);
+        try { window.presentationWin.focus(); } catch(e) {}
+    }, 1000);
     
-    // Open presenter view
-    window.presenterWindow = window.open('', 'PresenterView', 'width=1200,height=900');
+    window.presenterWin = window.open('', 'PresenterView', 'width=1200,height=900');
     
     const presenterHTML = `
     <!DOCTYPE html>
@@ -169,48 +179,40 @@ export function togglePresenterMode() {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 20px; }
-            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-            .timer { font-size: 48px; font-weight: bold; color: #4285f4; }
+            body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; padding: 15px; }
+            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+            .timer { font-size: 42px; font-weight: bold; color: #4285f4; }
             .timer.running { animation: pulse 2s infinite; }
             @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
-            .info-bar { display: flex; gap: 20px; align-items: center; }
-            .slide-counter { font-size: 24px; background: #333; padding: 10px 20px; border-radius: 8px; }
-            .display-hint { background: #fbbc04; color: black; padding: 10px 15px; border-radius: 8px; font-size: 14px; }
-            .slides-container { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px; margin-bottom: 15px; }
-            .slide-box { background: #333; border-radius: 12px; padding: 12px; text-align: center; }
+            .slide-counter { font-size: 22px; background: #333; padding: 8px 16px; border-radius: 8px; }
+            .slides-container { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+            .slide-box { background: #333; border-radius: 10px; padding: 10px; text-align: center; }
             .slide-box.current { border: 3px solid #4285f4; }
-            .slide-box h4 { color: #888; margin-bottom: 8px; font-size: 12px; }
-            .slide-preview { background: #202124; border-radius: 8px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; overflow: hidden; }
-            .slide-preview.current { height: 180px; border: 2px solid #4285f4; }
-            .slide-preview h2 { font-size: 12px; color: #4285f4; }
-            .slide-preview p { font-size: 9px; color: #aaa; }
-            .slide-preview .empty { color: #555; font-size: 11px; }
-            .notes { background: #333; border-radius: 12px; padding: 15px; }
-            .notes h4 { color: #888; margin-bottom: 8px; font-size: 12px; }
-            .notes textarea { width: 100%; height: 70px; background: #222; border: none; color: white; padding: 10px; border-radius: 8px; font-size: 13px; resize: none; }
-            .controls { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
-            .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+            .slide-box h4 { color: #888; margin-bottom: 6px; font-size: 11px; }
+            .slide-preview { background: #202124; border-radius: 6px; height: 90px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; overflow: hidden; }
+            .slide-preview.current { height: 160px; border: 2px solid #4285f4; }
+            .slide-preview h2 { font-size: 11px; color: #4285f4; }
+            .slide-preview p { font-size: 8px; color: #aaa; }
+            .slide-preview .empty { color: #555; font-size: 10px; }
+            .notes { background: #333; border-radius: 10px; padding: 12px; }
+            .notes h4 { color: #888; margin-bottom: 6px; font-size: 11px; }
+            .notes textarea { width: 100%; height: 60px; background: #222; border: none; color: white; padding: 8px; border-radius: 6px; font-size: 12px; resize: none; }
+            .controls { display: flex; gap: 8px; margin-top: 12px; justify-content: center; }
+            .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
             .btn-prev { background: #ea4335; color: white; }
             .btn-next { background: #34a853; color: white; }
             .btn-timer { background: #fbbc04; color: black; }
             .btn-stop { background: #666; color: white; }
-            .btn:hover { opacity: 0.9; }
-            .fullscreen-hint { background: #222; border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; color: #aaa; text-align: center; }
+            .hint { background: #222; border: 1px solid #444; padding: 8px; border-radius: 6px; margin-bottom: 12px; font-size: 11px; color: #aaa; text-align: center; }
         </style>
     </head>
     <body>
-        <div class="fullscreen-hint">
-            <i class="fas fa-desktop"></i> Trascina la finestra "Presentazione" sullo schermo esterno e premi F per fullscreen
+        <div class="hint">
+            <i class="fas fa-desktop"></i> Trascina la finestra "Presentazione" sul 2° schermo, poi Fullscreen (F)
         </div>
         <div class="header">
-            <div>
-                <button class="btn btn-timer" onclick="toggleTimer()" id="timerBtn"><i class="fas fa-play"></i> Start</button>
-            </div>
-            <div class="info-bar">
-                <span style="color:#888">Slide:</span>
-                <div class="slide-counter"><span id="slideNum">1</span> / <span id="totalSlides">${slideContents.length}</span></div>
-            </div>
+            <button class="btn btn-timer" onclick="toggleTimer()" id="timerBtn"><i class="fas fa-play"></i> Start</button>
+            <div class="slide-counter"><span id="slideNum">1</span> / <span id="totalSlides">${slideContents.length}</span></div>
             <div class="timer" id="timer">00:00:00</div>
         </div>
         <div class="slides-container">
@@ -229,47 +231,48 @@ export function togglePresenterMode() {
         </div>
         <div class="notes">
             <h4>NOTE</h4>
-            <textarea id="notes" placeholder="Scrivi le tue note qui..."></textarea>
+            <textarea id="notes" placeholder="Scrivi le note..."></textarea>
         </div>
         <div class="controls">
-            <button class="btn btn-prev" onclick="goPrev()"><i class="fas fa-arrow-left"></i> Precedente</button>
-            <button class="btn btn-stop" onclick="window.close()"><i class="fas fa-stop"></i> Esci</button>
-            <button class="btn btn-next" onclick="goNext()">Successiva <i class="fas fa-arrow-right"></i></button>
+            <button class="btn btn-prev" onclick="goPrev()"><i class="fas fa-arrow-left"></i></button>
+            <button class="btn btn-stop" onclick="window.close()"><i class="fas fa-stop"></i></button>
+            <button class="btn btn-next" onclick="goNext()"><i class="fas fa-arrow-right"></i></button>
         </div>
         <script>
             const slideData = ${JSON.stringify(slideContents)};
+            const channel = new BroadcastChannel('studio_marini_presenter');
             let currentSlide = 0;
             let timerInterval = null;
             let seconds = 0;
             let timerRunning = false;
             
-            function updateView(curr, total) {
+            function updateView(curr) {
                 document.getElementById('slideNum').textContent = curr;
                 
                 const prevIdx = curr - 2;
                 const nextIdx = curr;
                 
                 document.getElementById('prevSlide').innerHTML = prevIdx >= 0 
-                    ? '<h2>' + slideData[prevIdx].h2 + '</h2><p>' + (slideData[prevIdx].p || '').substring(0,40) + '</p>'
+                    ? '<h2>' + slideData[prevIdx].h2 + '</h2><p>' + (slideData[prevIdx].p || '').substring(0,35) + '</p>'
                     : '<span class="empty">Nessuna</span>';
                     
-                document.getElementById('currentSlide').innerHTML = '<h2>' + slideData[curr-1].h2 + '</h2><p>' + (slideData[curr-1].p || '').substring(0,80) + '</p>';
+                document.getElementById('currentSlide').innerHTML = '<h2>' + slideData[curr-1].h2 + '</h2><p>' + (slideData[curr-1].p || '').substring(0,70) + '</p>';
                 
                 document.getElementById('nextSlide').innerHTML = nextIdx < slideData.length 
-                    ? '<h2>' + slideData[nextIdx].h2 + '</h2><p>' + (slideData[nextIdx].p || '').substring(0,40) + '</p>'
+                    ? '<h2>' + slideData[nextIdx].h2 + '</h2><p>' + (slideData[nextIdx].p || '').substring(0,35) + '</p>'
                     : '<span class="empty">Nessuna</span>';
             }
             
             function goPrev() {
                 currentSlide = (currentSlide - 1 + slideData.length) || slideData.length;
-                updateView(currentSlide, slideData.length);
-                window.presentationWindow?.updateSlide(currentSlide - 1);
+                updateView(currentSlide);
+                channel.postMessage({action:'goto', index:currentSlide-1});
             }
             
             function goNext() {
                 currentSlide = (currentSlide % slideData.length) + 1;
-                updateView(currentSlide, slideData.length);
-                window.presentationWindow?.updateSlide(currentSlide - 1);
+                updateView(currentSlide);
+                channel.postMessage({action:'goto', index:currentSlide-1});
             }
             
             function toggleTimer() {
@@ -299,21 +302,14 @@ export function togglePresenterMode() {
                 if (e.key === 'ArrowRight' || e.key === ' ') goNext();
             });
             
-            window.addEventListener('message', (e) => {
-                if (e.data?.type === 'slideChange') {
-                    currentSlide = e.data.index + 1;
-                    updateView(currentSlide, slideData.length);
-                }
-            });
-            
-            updateView(1, slideData.length);
+            updateView(1);
         </script>
     </body>
     </html>
     `;
     
-    window.presenterWindow.document.write(presenterHTML);
-    window.presenterWindow.document.close();
+    window.presenterWin.document.write(presenterHTML);
+    window.presenterWin.document.close();
     
     document.getElementById('presenterMode').textContent = 'Presentatore ON';
     document.getElementById('presenterMode').style.background = 'var(--g-green)';
