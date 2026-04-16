@@ -800,13 +800,6 @@ export function startPresentation() {
     }, 1000);
 }
 
-export function syncPresentation(index) {
-    if (window.presentationWin && !window.presentationWin.closed) {
-        const channel = new BroadcastChannel('studio_marini_presentation');
-        channel.postMessage({action: 'sync', index: index});
-    }
-}
-
 export function openTab(tabId) {
     const contents = document.querySelectorAll('.tab-content');
     contents.forEach(content => content.classList.remove('active'));
