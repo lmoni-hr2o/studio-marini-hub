@@ -21,12 +21,58 @@ export function getAppId() {
 let currentSlide = 0;
 const slides = document.querySelectorAll('.slide-content');
 const counter = document.getElementById('slideCounter');
+let presenterMode = false;
 
 export function changeSlide(dir) {
     slides[currentSlide].classList.remove('active');
     currentSlide = (currentSlide + dir + slides.length) % slides.length;
     slides[currentSlide].classList.add('active');
     counter.innerText = `Slide ${currentSlide + 1} / ${slides.length}`;
+}
+
+export function toggleFullscreen() {
+    const viewer = document.getElementById('viewer');
+    const btn = viewer.querySelector('.fullscreen-btn');
+    
+    if (!document.fullscreenElement) {
+        viewer.requestFullscreen().then(() => {
+            viewer.classList.add('fullscreen');
+            btn.innerHTML = '<i class="fas fa-compress"></i>';
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            viewer.classList.remove('fullscreen');
+            btn.innerHTML = '<i class="fas fa-expand"></i>';
+        });
+    }
+}
+
+document.addEventListener('fullscreenchange', () => {
+    const viewer = document.getElementById('viewer');
+    const btn = viewer?.querySelector('.fullscreen-btn');
+    if (!document.fullscreenElement && btn) {
+        viewer.classList.remove('fullscreen');
+        btn.innerHTML = '<i class="fas fa-expand"></i>';
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowRight' || e.key === ' ') changeSlide(1);
+    if (e.key === 'ArrowLeft') changeSlide(-1);
+    if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+    if (e.key === 'p' || e.key === 'P') togglePresenterMode();
+    if (e.key === 'Escape' && document.fullscreenElement) document.exitFullscreen();
+});
+
+export function togglePresenterMode() {
+    const viewer = document.getElementById('viewer');
+    const badge = document.getElementById('presenterMode');
+    
+    presenterMode = !presenterMode;
+    viewer.classList.toggle('presenter-mode', presenterMode);
+    badge.textContent = presenterMode ? 'Presentatore ON' : 'Modalità Presentatore';
+    badge.style.background = presenterMode ? 'var(--g-green)' : 'var(--g-blue)';
 }
 
 export function openTab(tabId) {
@@ -203,6 +249,8 @@ window.copyPrompt = copyPrompt;
 window.syncCheck = syncCheck;
 window.generateAiText = generateAiText;
 window.generateImage = generateImage;
+window.toggleFullscreen = toggleFullscreen;
+window.togglePresenterMode = togglePresenterMode;
 
 export function initApp() {
     loadChecklist();

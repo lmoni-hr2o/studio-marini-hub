@@ -155,6 +155,54 @@ nav a:hover {
     overflow: hidden;
 }
 
+.slide-viewer.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    border-radius: 0;
+    aspect-ratio: unset;
+}
+
+.fullscreen-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.fullscreen-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.presenter-info {
+    display: flex;
+    align-items: center;
+}
+
+.presenter-mode .slide-content {
+    padding: 40px 60px;
+}
+
+.presenter-mode .slide-content h2 {
+    font-size: 36px;
+}
+
+.presenter-mode .slide-content p {
+    font-size: 18px;
+}
+
 .slide-content {
     flex-grow: 1;
     padding: 60px 80px;

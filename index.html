@@ -390,6 +390,7 @@ re aziendali</li>
 
         <h2 class="section-title" id="presentazione"><i class="fas fa-desktop"></i> Slide Presentazione</h2>
         <div class="slide-viewer" id="viewer">
+            <button class="fullscreen-btn" onclick="toggleFullscreen()"><i class="fas fa-expand"></i></button>
             <div class="slide-content active">
                 <div style="background: var(--g-blue); width: 80px; height: 80px; border-radius: 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold;">M</div>
                 <h2>L'Ufficio Automatico</h2>
@@ -432,9 +433,15 @@ re aziendali</li>
             </div>
 
             <div class="slide-controls">
-                <button class="btn btn-nav" onclick="changeSlide(-1)"><i class="fas fa-arrow-left"></i></button>
-                <span id="slideCounter">Slide 1 / 4</span>
-                <button class="btn btn-nav" onclick="changeSlide(1)"><i class="fas fa-arrow-right"></i></button>
+                <div class="presenter-info">
+                    <span id="presenterMode" class="badge badge-cloud">Modalità Presentatore</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-nav" onclick="togglePresenterMode()" title="Modalità Presentatore"><i class="fas fa-chalkboard-teacher"></i></button>
+                    <button class="btn btn-nav" onclick="changeSlide(-1)"><i class="fas fa-arrow-left"></i></button>
+                    <span id="slideCounter">Slide 1 / 4</span>
+                    <button class="btn btn-nav" onclick="changeSlide(1)"><i class="fas fa-arrow-right"></i></button>
+                </div>
             </div>
         </div>
 
