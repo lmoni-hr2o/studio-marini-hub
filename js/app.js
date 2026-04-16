@@ -73,7 +73,7 @@ export function togglePresenterMode() {
             }
             
             channel.onmessage = (e) => {
-                const { type, title, content, label, index } = e.data;
+                const { type, title, content, label } = e.data;
                 if (type === 'intro') {
                     showSlide(0);
                     document.getElementById('headerLabel').textContent = label || 'Introduzione';
@@ -90,6 +90,29 @@ export function togglePresenterMode() {
                     showSlide(3);
                     document.getElementById('toolTitle').textContent = title || 'Strumento';
                     document.getElementById('headerLabel').textContent = label || 'Strumento';
+                } else if (type === 'showContent') {
+                    // New dynamic content handler
+                    const slideType = e.data.type;
+                    const slideTitle = e.data.title;
+                    const slideContent = e.data.content;
+                    const slideLabel = e.data.label;
+                    
+                    // Update intro slide
+                    document.querySelector('.slide[data-type="intro"] h1').textContent = slideTitle || 'Studio Marini';
+                    
+                    // Update presentation slide
+                    document.getElementById('slideTitle').textContent = slideTitle || '';
+                    document.getElementById('slideContent').innerHTML = slideContent || '';
+                    
+                    // Update lab slide
+                    document.getElementById('labTitle').textContent = slideTitle || '';
+                    
+                    // Update header
+                    document.getElementById('headerLabel').textContent = slideLabel || '';
+                    
+                    // Navigate to correct slide based on type
+                    const typeMap = { 'intro': 0, 'presentation': 1, 'lab': 2, 'tool': 3 };
+                    showSlide(typeMap[slideType] ?? 0);
                 }
                 if (index !== undefined) showSlide(index);
             };
