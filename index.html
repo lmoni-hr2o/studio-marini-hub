@@ -317,6 +317,33 @@ re aziendali</li>
             </div>
         </div>
 
+        <h2 class="section-title" id="ai-lab"><i class="fas fa-robot"></i> AI Lab - Laboratorio Operativo</h2>
+        <p style="margin-bottom: 30px; color: var(--subtext);">Sperimenta i prompt AI in tempo reale</p>
+        
+        <div class="grid">
+            <div class="card lab-card">
+                <span class="badge badge-ai">Gemini 2.0 Flash</span>
+                <h3>AI Text Studio</h3>
+                <p style="font-size: 14px; margin-bottom: 20px;">Sperimenta i prompt reali per la tua segreteria.</p>
+                <textarea id="aiPrompt" class="prompt-area" placeholder="Esempio: Scrivi un'email di sollecito fattura n.47, tono cordiale..."></textarea>
+                <button id="btnAi" class="btn btn-blue" onclick="generateAiText()">
+                    <i class="fas fa-paper-plane"></i> Genera Bozza
+                </button>
+                <div id="aiOutput" class="response-box"></div>
+            </div>
+
+            <div class="card lab-card">
+                <span class="badge badge-ai">Imagen 3.0</span>
+                <h3>AI Image Studio</h3>
+                <p style="font-size: 14px; margin-bottom: 20px;">Crea icone o grafiche per i tuoi documenti.</p>
+                <textarea id="imagePrompt" class="prompt-area" placeholder="Esempio: Icona minimalista di un magazzino tecnologico..."></textarea>
+                <button id="btnImage" class="btn btn-green" onclick="generateImage()">
+                    <i class="fas fa-magic"></i> Genera Asset
+                </button>
+                <img id="imageResult" alt="Asset Generato" style="display:none; width:100%; border-radius:16px; margin-top:20px;">
+            </div>
+        </div>
+
         <h2 class="section-title" id="prompt"><i class="fas fa-robot"></i> Prompt Library</h2>
         <p style="margin-bottom: 30px; color: var(--subtext);">Copia e incolla questi prompt nei tuoi laboratori AI</p>
         
