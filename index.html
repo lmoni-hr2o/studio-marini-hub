@@ -104,6 +104,10 @@
                     <i class="fas fa-folder"></i>
                     <span>Risorse</span>
                 </button>
+                <button class="nav-item" onclick="openTool('downloads')">
+                    <i class="fas fa-download"></i>
+                    <span>Download Materiali</span>
+                </button>
             </div>
         </nav>
 
@@ -431,6 +435,130 @@ function renderLabContent(sectionId) {
 
         window.closeModal = function(modalId) {
             document.getElementById('modal-' + modalId).style.display = 'none';
+        };
+
+        window.openTool = function(toolId) {
+            const container = document.getElementById('module-view');
+            
+            if (toolId === 'ai-text') {
+                container.innerHTML = `
+                    <div class="tool-view">
+                        <h2><i class="fas fa-robot"></i> AI Text Studio</h2>
+                        <textarea id="aiPrompt" class="prompt-area" placeholder="Scrivi il tuo prompt qui..."></textarea>
+                        <button class="btn btn-blue" onclick="generateAiText()">
+                            <i class="fas fa-paper-plane"></i> Genera
+                        </button>
+                        <div id="aiOutput" class="response-box"></div>
+                    </div>
+                `;
+            } else if (toolId === 'ai-image') {
+                container.innerHTML = `
+                    <div class="tool-view">
+                        <h2><i class="fas fa-image"></i> AI Image Studio</h2>
+                        <textarea id="imagePrompt" class="prompt-area" placeholder="Descrivi l'immagine che vuoi generare..."></textarea>
+                        <button class="btn btn-green" onclick="generateImage()">
+                            <i class="fas fa-magic"></i> Genera
+                        </button>
+                        <img id="imageResult" style="display:none; max-width:100%; margin-top:20px; border-radius:16px;">
+                    </div>
+                `;
+            } else if (toolId === 'prompts') {
+                container.innerHTML = `
+                    <div class="tool-view">
+                        <h2><i class="fas fa-copy"></i> Prompt Library</h2>
+                        <div class="prompts-grid">
+                            <div class="prompt-item" onclick="copyPromptText(this)">
+                                <span class="badge badge-ai">Reclamo</span>
+                                <code>Agisci come responsabile customer care...</code>
+                            </div>
+                            <div class="prompt-item" onclick="copyPromptText(this)">
+                                <span class="badge badge-ai">Preventivo</span>
+                                <code>Prendi questi appunti e trasformali in email professionale...</code>
+                            </div>
+                            <div class="prompt-item" onclick="copyPromptText(this)">
+                                <span class="badge badge-ai">Riassunto</span>
+                                <code>Leggi la trascrizione e estrai decisioni...</code>
+                            </div>
+                            <div class="prompt-item" onclick="copyPromptText(this)">
+                                <span class="badge badge-ai">Estrazione PDF</span>
+                                <code>Analizza questo PDF e estrai i vincoli economici...</code>
+                            </div>
+                            <div class="prompt-item" onclick="copyPromptText(this)">
+                                <span class="badge badge-ai">Semplificazione</span>
+                                <code>Spiega come se fossi un avvocato per un bambino di 10 anni...</code>
+                            </div>
+                            <div class="prompt-item" onclick="copyPromptText(this)">
+                                <span class="badge badge-ai">Procedura</span>
+                                <code>Crea un manuale operativo di apertura e chiusura...</code>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (toolId === 'risorse') {
+                container.innerHTML = `
+                    <div class="tool-view">
+                        <h2><i class="fas fa-folder"></i> Risorse</h2>
+                        <div class="resources-grid">
+                            <a href="https://workspace.google.com" target="_blank" class="resource-card">
+                                <i class="fab fa-google"></i>
+                                <span>Google Workspace</span>
+                            </a>
+                            <a href="https://stripe.com" target="_blank" class="resource-card">
+                                <i class="fab fa-stripe"></i>
+                                <span>Stripe</span>
+                            </a>
+                            <a href="https://workspace.google.com/business/" target="_blank" class="resource-card">
+                                <i class="fas fa-star"></i>
+                                <span>Workspace Premium</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else if (toolId === 'downloads') {
+                container.innerHTML = `
+                    <div class="tool-view">
+                        <h2><i class="fas fa-download"></i> Download Materiali</h2>
+                        <div style="margin-top:20px;">
+                            <div class="download-item">
+                                <i class="fas fa-file-pdf" style="color:#ea4335; font-size:40px;"></i>
+                                <div>
+                                    <h3>Manuale Corso</h3>
+                                    <p>Documento completo con tutte le informazioni</p>
+                                </div>
+                                <button class="btn btn-outline" onclick="alert('Carica il file PDF dal gestore moduli')">Download</button>
+                            </div>
+                            <div class="download-item">
+                                <i class="fas fa-images" style="color:#4285f4; font-size:40px;"></i>
+                                <div>
+                                    <h3>Slide Presentazione</h3>
+                                    <p>Materiale visivo del corso</p>
+                                </div>
+                                <button class="btn btn-outline" onclick="alert('Carica le slide dal gestore moduli')">Download</button>
+                            </div>
+                            <div class="download-item">
+                                <i class="fas fa-file-code" style="color:#34a853; font-size:40px;"></i>
+                                <div>
+                                    <h3>Prompt Templates</h3>
+                                    <p>File con tutti i prompt pronti da usare</p>
+                                </div>
+                                <button class="btn btn-outline" onclick="alert('Carica i template dal gestore moduli')">Download</button>
+                            </div>
+                        </div>
+                        <div style="margin-top:30px; padding:20px; background:#f8f9fa; border-radius:12px;">
+                            <p><i class="fas fa-info-circle"></i> Per aggiungere i tuoi file, vai su "Gestisci Moduli" e carica i file nella sezione risorse.</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            syncPresentationSection(99, 'tool', 'Strumenti', '<p>Usa gli strumenti indicati dal docente</p>', 'Strumenti');
+        };
+
+        window.copyPromptText = function(el) {
+            const text = el.querySelector('code').innerText;
+            navigator.clipboard.writeText(text);
+            el.style.background = '#34a853';
+            setTimeout(() => el.style.background = '', 1000);
         };
 
         window.addParticipant = function(e) {
