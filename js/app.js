@@ -491,6 +491,329 @@ window.generateAiText = generateAiText;
 window.generateImage = generateImage;
 window.toggleFullscreen = toggleFullscreen;
 window.togglePresenterMode = togglePresenterMode;
+window.startPresentation = startPresentation;
+
+export function startPresentation() {
+    if (window.presentationWin && !window.presentationWin.closed) {
+        window.presentationWin.focus();
+        return;
+    }
+    
+    window.presentationWin = window.open('', 'PresentazioneCompleta', 'width=1280,height=720');
+    
+    const channel = new BroadcastChannel('studio_marini_presentation');
+    
+    const presentationHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Presentazione Corso - Studio Marini</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; overflow: hidden; }
+            .slide { 
+                display: none; 
+                flex-direction: column; 
+                justify-content: center; 
+                align-items: center;
+                height: 100vh; 
+                padding: 60px;
+                text-align: center;
+            }
+            .slide.active { display: flex; }
+            .slide h1 { font-size: 56px; color: #4285f4; font-family: 'Poppins', sans-serif; margin-bottom: 20px; }
+            .slide h2 { font-size: 48px; color: #4285f4; font-family: 'Poppins', sans-serif; margin-bottom: 30px; }
+            .slide p { font-size: 28px; color: #9aa0a6; margin-bottom: 20px; }
+            .slide ul { font-size: 24px; color: #bdc1c6; text-align: left; margin: 20px 0; }
+            .slide li { margin: 15px 0; }
+            .badge { 
+                background: #e8f0fe; color: #4285f4; 
+                padding: 8px 20px; border-radius: 50px; 
+                font-size: 16px; font-weight: 700; text-transform: uppercase;
+            }
+            .progress {
+                position: fixed; bottom: 0; left: 0; right: 0;
+                height: 6px; background: #333;
+            }
+            .progress-bar {
+                height: 100%; background: #4285f4;
+                transition: width 0.3s;
+            }
+            .section-label {
+                position: fixed; top: 30px; left: 30px;
+                background: rgba(66, 133, 244, 0.2);
+                color: #4285f4; padding: 10px 20px;
+                border-radius: 8px; font-size: 14px;
+            }
+            .footer {
+                position: fixed; bottom: 30px; right: 30px;
+                color: #666; font-size: 14px;
+            }
+            .controls {
+                position: fixed; bottom: 20px; left: 50%;
+                transform: translateX(-50%);
+                display: flex; gap: 10px;
+            }
+            .controls button {
+                background: rgba(255,255,255,0.1);
+                border: none; color: white; padding: 10px 20px;
+                border-radius: 8px; cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="section-label" id="sectionLabel">Benvenuto</div>
+        <div class="progress"><div class="progress-bar" id="progressBar" style="width: 5%"></div></div>
+        
+        <!-- Hero Slide -->
+        <div class="slide active" data-section="hero" data-index="0">
+            <span class="badge">Masterclass 2026</span>
+            <h1>L'Ufficio Automatico</h1>
+            <p>Google Workspace per PMI: Automazione, Pagamenti e Intelligenza Artificiale</p>
+            <div style="margin-top: 40px; color: #4285f4; font-size: 18px;">Studio Marini Formazione • Aprile 2026</div>
+        </div>
+        
+        <!-- Slide Presentazione -->
+        <div class="slide" data-section="presentazione" data-index="1">
+            <h2>L'Ufficio Automatico</h2>
+            <p>Google Workspace per PMI — Automazione e AI</p>
+            <div style="width: 150px; height: 4px; background: #ea4335; margin: 30px 0;"></div>
+            <p style="font-size: 20px;">Studio Marini Formazione • Aprile 2026</p>
+        </div>
+        
+        <!-- Chi Siamo -->
+        <div class="slide" data-section="presentazione" data-index="2">
+            <h2>Chi Siamo</h2>
+            <p>Partners della Trasformazione</p>
+            <ul style="list-style: none; padding: 0;">
+                <li><i class="fas fa-check" style="color: #34a853;"></i> 15+ Anni di esperienza IT</li>
+                <li><i class="fas fa-check" style="color: #34a853;"></i> 200+ Aziende digitalizzate</li>
+                <li><i class="fas fa-check" style="color: #34a853;"></i> Focus su PMI e Artigianato</li>
+            </ul>
+        </div>
+        
+        <!-- L'Era dell'AI -->
+        <div class="slide" data-section="presentazione" data-index="3">
+            <h2>L'Era dell'AI</h2>
+            <p>Gemini in Google Workspace</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px;">
+                <div style="background: #333; padding: 30px; border-radius: 16px;">
+                    <h3 style="color: #4285f4;">Testo</h3>
+                    <p style="font-size: 18px;">Sintesi email, bozze solleciti, verbali meet.</p>
+                </div>
+                <div style="background: #333; padding: 30px; border-radius: 16px;">
+                    <h3 style="color: #4285f4;">Immagini</h3>
+                    <p style="font-size: 18px;">Generazione asset per marketing e docs.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Il Muro di Google -->
+        <div class="slide" data-section="presentazione" data-index="4">
+            <h2>Il Muro di Google</h2>
+            <p>Cosa NON fa e come lo risolviamo</p>
+            <ul style="color: #ea4335;">
+                <li>Mancata integrazione TeamSystem</li>
+                <li>Zero tracking ore tecnici</li>
+                <li>No WhatsApp Automation</li>
+            </ul>
+            <p style="margin-top: 30px; color: #34a853; font-size: 24px;">✓ Risolto con App Proprietaria Studio Marini</p>
+        </div>
+        
+        <!-- Moduli -->
+        <div class="slide" data-section="moduli" data-index="5">
+            <h2>I Moduli del Corso</h2>
+            <div style="text-align: left; max-width: 800px;">
+                <p><strong style="color: #4285f4;">Corso Base (4h):</strong> L'Ufficio Automatico</p>
+                <p><strong style="color: #4285f4;">Modulo 1 (2h):</strong> Booking & Pagamenti Digitali</p>
+                <p><strong style="color: #4285f4;">Modulo 2 (2h):</strong> Segreteria AI: Posta e Riunioni</p>
+                <p><strong style="color: #4285f4;">Modulo 3 (2h):</strong> La Fabbrica dei Documenti</p>
+            </div>
+        </div>
+        
+        <!-- Lab Pratici -->
+        <div class="slide" data-section="laboratori" data-index="6">
+            <h2>Laboratori Pratici</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; max-width: 900px;">
+                <div><strong>Lab 1:</strong> Configura il Tuo Agenda</div>
+                <div><strong>Lab 2:</strong> Crea i Tuoi Servizi</div>
+                <div><strong>Lab 3:</strong> Collega Stripe</div>
+                <div><strong>Lab 4:</strong> Scrivi Email AI</div>
+                <div><strong>Lab 5:</strong> Riunione Trascritta</div>
+                <div><strong>Lab 6:</strong> Genera Documenti</div>
+            </div>
+        </div>
+        
+        <!-- AI Lab -->
+        <div class="slide" data-section="ai-lab" data-index="7">
+            <h2>AI Lab - Laboratorio Operativo</h2>
+            <p>Sperimenta i prompt AI in tempo reale</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; max-width: 800px;">
+                <div style="background: #333; padding: 25px; border-radius: 16px;">
+                    <h3 style="color: #4285f4;">Gemini 2.0 Flash</h3>
+                    <p>Generazione testi professionali</p>
+                </div>
+                <div style="background: #333; padding: 25px; border-radius: 16px;">
+                    <h3 style="color: #34a853;">Imagen 3.0</h3>
+                    <p>Generazione immagini e asset</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Prompt Library -->
+        <div class="slide" data-section="prompt" data-index="8">
+            <h2>Prompt Library</h2>
+            <p>6 prompt pronti da usare</p>
+            <ul style="text-align: left; max-width: 600px; font-size: 20px;">
+                <li>📝 Risposta Reclamo Cliente</li>
+                <li>💼 Email Preventivo</li>
+                <li>📋 Estrai Decisioni da Trascrizione</li>
+                <li>📄 Estrai da PDF</li>
+                <li>⚖️ Semplifica Testo Legale</li>
+                <li>📚 Genera Manuale Operativo</li>
+            </ul>
+        </div>
+        
+        <!-- Roadmap -->
+        <div class="slide" data-section="roadmap" data-index="9">
+            <h2>La tua Roadmap</h2>
+            <p>Traccia il tuo percorso formativo</p>
+            <ul style="text-align: left; max-width: 600px; font-size: 20px;">
+                <li>✓ Configura Agenda</li>
+                <li>✓ Crea Listino Servizi</li>
+                <li>✓ Collega Stripe</li>
+                <li>✓ Prompt Reclamo</li>
+                <li>✓ Estrai Decisioni</li>
+                <li>✓ Analisi PDF</li>
+            </ul>
+        </div>
+        
+        <!-- Risorse -->
+        <div class="slide" data-section="risorse" data-index="10">
+            <h2>Risorse & Link Utili</h2>
+            <div style="display: flex; gap: 40px; margin-top: 30px;">
+                <div style="text-align: center;">
+                    <i class="fab fa-google" style="font-size: 60px; color: #4285f4;"></i>
+                    <p>Google Workspace</p>
+                </div>
+                <div style="text-align: center;">
+                    <i class="fab fa-stripe" style="font-size: 60px; color: #635bff;"></i>
+                    <p>Stripe</p>
+                </div>
+                <div style="text-align: center;">
+                    <i class="fas fa-file-pdf" style="font-size: 60px; color: #ea4335;"></i>
+                    <p>Manuale Corso</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">© 2026 Studio Marini Formazione</div>
+        
+        <div class="controls">
+            <button onclick="goSlide(-1)">◀</button>
+            <button onclick="toggleFS()">Fullscreen</button>
+            <button onclick="goSlide(1)">▶</button>
+        </div>
+        
+        <script>
+            const slides = document.querySelectorAll('.slide');
+            const sectionLabel = document.getElementById('sectionLabel');
+            const progressBar = document.getElementById('progressBar');
+            let currentSlide = 0;
+            const channel = new BroadcastChannel('studio_marini_presentation');
+            
+            function showSlide(index) {
+                slides.forEach((s, i) => s.classList.toggle('active', i === index));
+                currentSlide = index;
+                
+                const section = slides[index].dataset.section;
+                const labels = {
+                    'hero': 'Benvenuto',
+                    'presentazione': 'Presentazione',
+                    'moduli': 'I Moduli',
+                    'laboratori': 'Laboratori Pratici',
+                    'ai-lab': 'AI Lab',
+                    'prompt': 'Prompt Library',
+                    'roadmap': 'Roadmap',
+                    'risorse': 'Risorse'
+                };
+                sectionLabel.textContent = labels[section] || 'Corso';
+                progressBar.style.width = ((index + 1) / slides.length * 100) + '%';
+            }
+            
+            function goSlide(dir) {
+                currentSlide = (currentSlide + dir + slides.length) % slides.length;
+                showSlide(currentSlide);
+                channel.postMessage({action: 'sync', index: currentSlide});
+            }
+            
+            function toggleFS() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+            
+            channel.onmessage = (e) => {
+                if (e.data.action === 'sync') {
+                    showSlide(e.data.index);
+                }
+            };
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') goSlide(1);
+                if (e.key === 'ArrowLeft') goSlide(-1);
+                if (e.key === 'f') toggleFS();
+            });
+            
+            showSlide(0);
+        </script>
+    </body>
+    </html>
+    `;
+    
+    window.presentationWin.document.write(presentationHTML);
+    window.presentationWin.document.close();
+    
+    setTimeout(() => {
+        try { window.presentationWin.focus(); } catch(e) {}
+    }, 1000);
+}
+
+export function syncPresentation(index) {
+    if (window.presentationWin && !window.presentationWin.closed) {
+        const channel = new BroadcastChannel('studio_marini_presentation');
+        channel.postMessage({action: 'sync', index: index});
+    }
+}
+
+export function openTab(tabId) {
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+    
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    
+    const clickedBtn = document.querySelector('[onclick="openTab(\'' + tabId + '\')"]');
+    if (clickedBtn) clickedBtn.classList.add('active');
+    
+    document.getElementById(tabId).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    const sectionMap = {
+        'corso-base': 5,
+        'modulo-1': 5,
+        'modulo-2': 5,
+        'modulo-3': 5
+    };
+    
+    if (sectionMap[tabId] !== undefined) {
+        syncPresentation(sectionMap[tabId]);
+    }
+}
 
 export function initApp() {
     loadChecklist();
