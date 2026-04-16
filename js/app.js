@@ -15,110 +15,263 @@ export function togglePresenterMode() {
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Presentazione</title>
+        <title>Presentazione Corso</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { background: #1a1a1a; color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-            .slide { display: none; flex-direction: column; justify-content: center; align-items: center; height: 100vh; padding: 60px; text-align: center; }
+            
+            .slide { 
+                display: none; 
+                flex-direction: column; 
+                height: 100vh; 
+                padding: 40px 60px;
+            }
             .slide.active { display: flex; }
-            .slide h1 { font-size: 56px; color: #4285f4; margin-bottom: 30px; }
-            .slide h2 { font-size: 48px; color: #4285f4; margin-bottom: 20px; }
-            .slide p { font-size: 28px; color: #9aa0a6; }
-            .slide ul { font-size: 24px; color: #bdc1c6; text-align: left; max-width: 800px; margin: 20px auto; }
-            .slide li { margin: 15px 0; }
-            .badge { background: #e8f0fe; color: #4285f4; padding: 10px 25px; border-radius: 50px; font-size: 18px; font-weight: 700; }
+            
+            .header-bar {
+                position: fixed;
+                top: 20px;
+                left: 30px;
+                right: 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                z-index: 100;
+            }
+            .section-label {
+                background: rgba(66,133,244,0.2);
+                color: #4285f4;
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+            }
+            .module-label {
+                color: #888;
+                font-size: 14px;
+            }
+            
+            .slide-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                max-width: 1200px;
+                margin: 0 auto;
+                width: 100%;
+            }
+            
+            .slide h1 {
+                font-size: 56px;
+                color: #4285f4;
+                margin-bottom: 40px;
+                font-family: 'Poppins', sans-serif;
+            }
+            .slide h2 {
+                font-size: 48px;
+                color: #4285f4;
+                margin-bottom: 30px;
+                font-family: 'Poppins', sans-serif;
+            }
+            .slide p {
+                font-size: 28px;
+                color: #9aa0a6;
+                margin-bottom: 20px;
+            }
+            .slide ul {
+                font-size: 26px;
+                color: #bdc1c6;
+                line-height: 1.8;
+            }
+            .slide li {
+                margin-bottom: 15px;
+            }
+            
+            .badge {
+                display: inline-block;
+                padding: 10px 25px;
+                border-radius: 50px;
+                font-size: 18px;
+                font-weight: 700;
+                text-transform: uppercase;
+                margin-bottom: 20px;
+            }
+            .badge-presentation { background: #e8f0fe; color: #4285f4; }
             .badge-lab { background: #e8f5e9; color: #34a853; }
-            .header { position: fixed; top: 30px; left: 30px; background: rgba(66,133,244,0.2); padding: 10px 20px; border-radius: 8px; }
-            .footer { position: fixed; bottom: 30px; right: 30px; color: #666; }
-            .progress { position: fixed; bottom: 0; left: 0; right: 0; height: 6px; background: #333; }
-            .progress-bar { height: 100%; background: #4285f4; transition: width 0.3s; }
+            .badge-intro { background: rgba(66,133,244,0.2); color: #4285f4; }
+            
+            .lab-content {
+                background: #2d2d2d;
+                border-radius: 20px;
+                padding: 40px;
+                margin-top: 20px;
+            }
+            .lab-content h3 {
+                color: #34a853;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            .lab-content ol {
+                font-size: 22px;
+                color: #bdc1c6;
+                padding-left: 30px;
+            }
+            .lab-content li {
+                margin-bottom: 15px;
+            }
+            
+            .tools-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                margin-top: 30px;
+            }
+            .tool-card {
+                background: #333;
+                padding: 30px;
+                border-radius: 16px;
+                text-align: center;
+            }
+            .tool-card i {
+                font-size: 48px;
+                margin-bottom: 15px;
+            }
+            .tool-card.blue i { color: #4285f4; }
+            .tool-card.green i { color: #34a853; }
+            
+            .progress {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 6px;
+                background: #333;
+            }
+            .progress-bar {
+                height: 100%;
+                background: linear-gradient(90deg, #4285f4, #34a853);
+                transition: width 0.5s ease;
+            }
+            
+            .footer {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                color: #666;
+            }
         </style>
     </head>
     <body>
-        <div class="header" id="headerLabel">Modulo</div>
-        <div class="progress"><div class="progress-bar" id="progressBar" style="width: 5%"></div></div>
-        
-        <div class="slide active" data-type="intro">
-            <span class="badge">Studio Marini</span>
-            <h1>L'Ufficio Automatico</h1>
-            <p>Google Workspace per PMI</p>
+        <div class="header-bar">
+            <div class="section-label" id="sectionLabel">Benvenuto</div>
+            <div class="module-label" id="moduleLabel"></div>
         </div>
         
-        <div class="slide" data-type="presentation">
-            <h2 id="slideTitle">Presentazione</h2>
-            <ul id="slideContent"><li>Contenuto della lezione</li></ul>
+        <div class="progress"><div class="progress-bar" id="progressBar" style="width: 0%"></div></div>
+        
+        <!-- Slide 0: Intro -->
+        <div class="slide active" id="slide-intro">
+            <div class="slide-content" id="intro-content">
+                <span class="badge badge-intro" id="intro-badge">Studio Marini</span>
+                <h1 id="intro-title">L'Ufficio Automatico</h1>
+                <p id="intro-subtitle">Google Workspace per PMI</p>
+            </div>
         </div>
         
-        <div class="slide" data-type="lab">
-            <span class="badge badge-lab"><i class="fas fa-flask"></i> Laboratorio Pratico</span>
-            <h2 id="labTitle">Esercitazione</h2>
-            <p>Segui le istruzioni del docente</p>
+        <!-- Slide 1: Presentation -->
+        <div class="slide" id="slide-presentation">
+            <div class="slide-content" id="presentation-content">
+                <span class="badge badge-presentation"><i class="fas fa-chalkboard-teacher"></i> Presentazione</span>
+                <h1 id="presentation-title">Titolo Presentazione</h1>
+                <div id="presentation-body"></div>
+            </div>
         </div>
         
-        <div class="slide" data-type="tool">
-            <h2 id="toolTitle">Strumento</h2>
-            <p>Utilizza lo strumento indicato</p>
+        <!-- Slide 2: Lab -->
+        <div class="slide" id="slide-lab">
+            <div class="slide-content" id="lab-content">
+                <span class="badge badge-lab"><i class="fas fa-flask"></i> Laboratorio Pratico</span>
+                <h1 id="lab-title">Titolo Laboratorio</h1>
+                <div id="lab-body"></div>
+            </div>
+        </div>
+        
+        <!-- Slide 3: Tools -->
+        <div class="slide" id="slide-tools">
+            <div class="slide-content">
+                <span class="badge badge-presentation"><i class="fas fa-tools"></i> Strumenti</span>
+                <h1>Strumenti del Corso</h1>
+                <div class="tools-grid">
+                    <div class="tool-card blue">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Text Studio</h3>
+                        <p>Generazione testi con Gemini</p>
+                    </div>
+                    <div class="tool-card green">
+                        <i class="fas fa-image"></i>
+                        <h3>AI Image Studio</h3>
+                        <p>Generazione immagini con Imagen</p>
+                    </div>
+                    <div class="tool-card blue">
+                        <i class="fas fa-copy"></i>
+                        <h3>Prompt Library</h3>
+                        <p>Prompt pronti da usare</p>
+                    </div>
+                    <div class="tool-card green">
+                        <i class="fas fa-folder"></i>
+                        <h3>Risorse</h3>
+                        <p>Materiali del corso</p>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="footer">Studio Marini Formazione</div>
         
         <script>
             const channel = new BroadcastChannel('studio_marini_presentation');
-            const slides = document.querySelectorAll('.slide');
             
             function showSlide(index) {
-                slides.forEach((s, i) => s.classList.toggle('active', i === index));
-                document.getElementById('progressBar').style.width = ((index + 1) / slides.length * 100) + '%';
+                document.querySelectorAll('.slide').forEach((s, i) => {
+                    s.classList.toggle('active', i === index);
+                });
+                document.getElementById('progressBar').style.width = ((index + 1) / 4 * 100) + '%';
             }
             
             channel.onmessage = (e) => {
-                const { type, title, content, label } = e.data;
-                if (type === 'intro') {
+                const data = e.data;
+                
+                document.getElementById('sectionLabel').textContent = data.label || 'Corso';
+                document.getElementById('moduleLabel').textContent = data.module || '';
+                
+                if (data.type === 'intro' || data.type === undefined) {
+                    if (data.title) document.getElementById('intro-title').textContent = data.title;
+                    if (data.subtitle) document.getElementById('intro-subtitle').textContent = data.subtitle;
+                    if (data.label) document.getElementById('intro-badge').textContent = data.label;
                     showSlide(0);
-                    document.getElementById('headerLabel').textContent = label || 'Introduzione';
-                } else if (type === 'presentation') {
-                    showSlide(1);
-                    document.getElementById('slideTitle').textContent = title || 'Presentazione';
-                    document.getElementById('slideContent').innerHTML = content || '';
-                    document.getElementById('headerLabel').textContent = label || 'Lezione';
-                } else if (type === 'lab') {
-                    showSlide(2);
-                    document.getElementById('labTitle').textContent = title || 'Laboratorio';
-                    document.getElementById('headerLabel').textContent = label || 'Laboratorio';
-                } else if (type === 'tool') {
-                    showSlide(3);
-                    document.getElementById('toolTitle').textContent = title || 'Strumento';
-                    document.getElementById('headerLabel').textContent = label || 'Strumento';
-                } else if (type === 'showContent') {
-                    // New dynamic content handler
-                    const slideType = e.data.type;
-                    const slideTitle = e.data.title;
-                    const slideContent = e.data.content;
-                    const slideLabel = e.data.label;
-                    
-                    // Update intro slide
-                    document.querySelector('.slide[data-type="intro"] h1').textContent = slideTitle || 'Studio Marini';
-                    
-                    // Update presentation slide
-                    document.getElementById('slideTitle').textContent = slideTitle || '';
-                    document.getElementById('slideContent').innerHTML = slideContent || '';
-                    
-                    // Update lab slide
-                    document.getElementById('labTitle').textContent = slideTitle || '';
-                    
-                    // Update header
-                    document.getElementById('headerLabel').textContent = slideLabel || '';
-                    
-                    // Navigate to correct slide based on type
-                    const typeMap = { 'intro': 0, 'presentation': 1, 'lab': 2, 'tool': 3 };
-                    showSlide(typeMap[slideType] ?? 0);
                 }
-                if (index !== undefined) showSlide(index);
+                else if (data.type === 'presentation') {
+                    document.getElementById('presentation-title').textContent = data.title || 'Presentazione';
+                    document.getElementById('presentation-body').innerHTML = data.content || '<p>Contenuto della lezione...</p>';
+                    showSlide(1);
+                }
+                else if (data.type === 'lab') {
+                    document.getElementById('lab-title').textContent = data.title || 'Laboratorio';
+                    document.getElementById('lab-body').innerHTML = data.content || '<p>Istruzioni del laboratorio...</p>';
+                    showSlide(2);
+                }
+                else if (data.type === 'tool') {
+                    showSlide(3);
+                }
             };
             
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'f' && !document.fullscreenElement) document.documentElement.requestFullscreen();
+                if (e.key === 'f' && !document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                }
+                if (e.key === 'Escape' && document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
             });
             
             showSlide(0);
@@ -159,7 +312,7 @@ export async function generateAiText() {
     output.style.display = 'block';
     output.innerText = "Gemini sta generando...";
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBFyBviMx7rTNOonSDoU4gsH4oTq5qJ2hQ`, {
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBFyBviMx7rTNOonSDoU4gsH4oTq5qJ2hQ', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -175,14 +328,14 @@ export async function generateImage() {
     if (!prompt || !img) return;
     img.style.display = 'none';
     try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=AIzaSyBFyBviMx7rTNOonSDoU4gsH4oTq5qJ2hQ`, {
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=AIzaSyBFyBviMx7rTNOonSDoU4gsH4oTq5qJ2hQ', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1 } })
         });
         const data = await res.json();
         if (data.predictions?.[0]) {
-            img.src = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+            img.src = 'data:image/png;base64,' + data.predictions[0].bytesBase64Encoded;
             img.style.display = 'block';
         }
     } catch (e) { alert("Errore"); }

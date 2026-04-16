@@ -304,102 +304,84 @@
             return contents[sectionId] || contents['default'];
         }
 
-        function renderLabContent(sectionId) {
+function renderLabContent(sectionId) {
             return `
-                <div class="lab-instructions">
-                    <h3>Istruzioni per il laboratorio:</h3>
+                <div class="lab-content">
+                    <h3><i class="fas fa-flask"></i> Istruzioni per il laboratorio:</h3>
                     <ol>
                         <li>Apri il tuo account Google Workspace</li>
-                        <li>Segui i passaggi indicati</li>
+                        <li>Segui i passaggi indicati dal docente</li>
                         <li>Testa le funzionalità mostrate</li>
+                        <li>Se hai dubbi, chiedi al docente</li>
                     </ol>
-                </div>
-                <div class="lab-tools">
-                    <button class="btn btn-blue" onclick="openTool('ai-text')">
-                        <i class="fas fa-robot"></i> AI Text Studio
-                    </button>
-                    <button class="btn btn-green" onclick="openTool('ai-image')">
-                        <i class="fas fa-image"></i> AI Image Studio
-                    </button>
+                    <div style="margin-top:30px; display:flex; gap:15px;">
+                        <button class="btn btn-blue" onclick="openTool('ai-text')"><i class="fas fa-robot"></i> AI Text Studio</button>
+                        <button class="btn btn-green" onclick="openTool('ai-image')"><i class="fas fa-image"></i> AI Image Studio</button>
+                    </div>
                 </div>
             `;
         }
 
-        window.openTool = function(toolId) {
-            const container = document.getElementById('module-view');
-            
-            if (toolId === 'ai-text') {
-                container.innerHTML = `
-                    <div class="tool-view">
-                        <h2><i class="fas fa-robot"></i> AI Text Studio</h2>
-                        <textarea id="aiPrompt" class="prompt-area" placeholder="Scrivi il tuo prompt qui..."></textarea>
-                        <button class="btn btn-blue" onclick="generateAiText()">
-                            <i class="fas fa-paper-plane"></i> Genera
-                        </button>
-                        <div id="aiOutput" class="response-box"></div>
-                    </div>
-                `;
-            } else if (toolId === 'ai-image') {
-                container.innerHTML = `
-                    <div class="tool-view">
-                        <h2><i class="fas fa-image"></i> AI Image Studio</h2>
-                        <textarea id="imagePrompt" class="prompt-area" placeholder="Descrivi l'immagine che vuoi generare..."></textarea>
-                        <button class="btn btn-green" onclick="generateImage()">
-                            <i class="fas fa-magic"></i> Genera
-                        </button>
-                        <img id="imageResult" style="display:none; max-width:100%; margin-top:20px; border-radius:16px;">
-                    </div>
-                `;
-            } else if (toolId === 'prompts') {
-                container.innerHTML = `
-                    <div class="tool-view">
-                        <h2><i class="fas fa-copy"></i> Prompt Library</h2>
-                        <div class="prompts-grid">
-                            <div class="prompt-item" onclick="copyPromptText(this)">
-                                <span class="badge badge-ai">Reclamo</span>
-                                <code>Agisci come responsabile customer care...</code>
-                            </div>
-                            <div class="prompt-item" onclick="copyPromptText(this)">
-                                <span class="badge badge-ai">Preventivo</span>
-                                <code>Prendi questi appunti e trasformali in email professionale...</code>
-                            </div>
-                            <div class="prompt-item" onclick="copyPromptText(this)">
-                                <span class="badge badge-ai">Riassunto</span>
-                                <code>Leggi la trascrizione e estrai decisioni...</code>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (toolId === 'risorse') {
-                container.innerHTML = `
-                    <div class="tool-view">
-                        <h2><i class="fas fa-folder"></i> Risorse</h2>
-                        <div class="resources-grid">
-                            <a href="https://workspace.google.com" target="_blank" class="resource-card">
-                                <i class="fab fa-google"></i>
-                                <span>Google Workspace</span>
-                            </a>
-                            <a href="https://stripe.com" target="_blank" class="resource-card">
-                                <i class="fab fa-stripe"></i>
-                                <span>Stripe</span>
-                            </a>
-                            <div class="resource-card">
-                                <i class="fas fa-file-pdf"></i>
-                                <span>Manuale PDF</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            syncPresentationSection(99, 'tool', 'Strumenti', '<p>Usa gli strumenti indicati dal docente</p>', 'Strumenti'); // Tool view
+        function getDynamicContent(moduleId, sectionId) {
+            const contents = {
+                'base': {
+                    'b1': '<ul><li><strong>Giro di Tavolo:</strong> Qual è l\'attività che ruba più tempo?</li><li><strong>Etichette e Filtri:</strong> Organizzazione automatica della inbox</li><li><strong>Gemini in Gmail:</strong> Riassunti e scrittura assistita</li></ul>',
+                    'b2': '<ul><li><strong>No-Show:</strong> Riduci le disdette con promemoria automatici</li><li><strong>Vetrina Prenotazioni:</strong> Slot pubblici senza vedere impegni privati</li><li><strong>Stripe:</strong> Pagamento anticipato automatico</li></ul>',
+                    'b3': '<ul><li><strong>Meet con Trascrizione:</strong> Automatico</li><li><strong>Da Trascrizione a To-Do:</strong> Con Gemini</li><li><strong>Generazione Documenti:</strong> Con AI</li></ul>',
+                    'b4': '<ul><li><strong>Il Muro di Google:</strong> Cosa NON può fare</li><li><strong>App Studio Marini:</strong> La soluzione proprietaria</li><li><strong>Raccolta Lead:</strong> Questionario digitale</li></ul>'
+                },
+                'mod1': {
+                    'm1-1': '<ul><li><strong>Orari di reperibilità:</strong> Configura quando sei disponibile</li><li><strong>Giorni di chiusura:</strong> Festività, ferie</li><li><strong>Tempo di cuscinetto:</strong> Pause tra appuntamenti</li></ul>',
+                    'm1-2': '<ul><li><strong>Tipi di Appuntamento:</strong> Crea servizi con durata specifica</li><li><strong>Descrizioni dettagliate:</strong> Cosa aspettarsi</li><li><strong>Campi obbligatori:</strong> Raccogli dati utili</li></ul>',
+                    'm1-3': '<ul><li><strong>Account Stripe:</strong> Collegamento a Google Workspace</li><li><strong>Pagamento Totale:</strong> Anticipo completo</li><li><strong>Quota Fissa:</strong> Solo prenotazione (es. 20€)</li></ul>',
+                    'm1-4': '<ul><li><strong>Link Pubblico:</strong> Genera la tua vetrina</li><li><strong>WhatsApp Business:</strong> Integra nelle risposte rapide</li><li><strong>Instagram:</strong> Pulsante Prenota</li></ul>'
+                },
+                'mod2': {
+                    'm2-1': '<ul><li><strong>Tono di voce:</strong> Addestra l\'AI al tuo stile</li><li><strong>Modelli Email:</strong> Standard per reclami e preventivi</li><li><strong>Prompt:</strong> Strutture pronte da usare</li></ul>',
+                    'm2-2': '<ul><li><strong>Avvio Meet:</strong> Con trascrizione automatica</li><li><strong>Roleplay:</strong> Simulazione in coppie</li><li><strong>Estrazione:</strong> Decisioni dalla trascrizione</li></ul>',
+                    'm2-3': '<ul><li><strong>Riassunto:</strong> 4 punti esecutivi</li><li><strong>To-Do List:</strong> Azione, Assegnato, Scadenza</li><li><strong>Follow-up:</strong> Chi deve fare cosa</li></ul>'
+                },
+                'mod3': {
+                    'm3-1': '<ul><li><strong>Estrazione:</strong> Vincoli economici e scadenze</li><li><strong>Semplificazione:</strong> Testo legale in parole semplici</li><li><strong>Analisi:</strong> Qualsiasi PDF</li></ul>',
+                    'm3-2': '<ul><li><strong>Manuale Operativo:</strong> Apertura e chiusura negozio</li><li><strong>Procedure:</strong> Step-by-step</li><li><strong>Formattazione:</strong> H1, H2 chiari</li></ul>',
+                    'm3-3': '<ul><li><strong>Da Email a Documento:</strong> Estrai dati e impagina</li><li><strong>Scheda Lavoro:</strong> Formato tabella</li><li><strong>Automazione:</strong> Senza copia-incolla</li></ul>'
+                }
+            };
+            return contents[moduleId]?.[sectionId] || '<ul><li>Contenuto del laboratorio...</li></ul>';
         }
 
-        window.copyPromptText = function(el) {
-            const text = el.querySelector('code').innerText;
-            navigator.clipboard.writeText(text);
-            el.style.background = '#34a853';
-            setTimeout(() => el.style.background = '', 1000);
+        window.showSection = function(sectionId, index) {
+            const module = modulesData[currentModule];
+            const section = module.sections.find(s => s.id === sectionId);
+            
+            let contentHtml;
+            if (section.type === 'presentation') {
+                contentHtml = getDynamicContent(currentModule, sectionId);
+            } else {
+                contentHtml = renderLabContent(sectionId);
+            }
+            
+            const container = document.getElementById('module-view');
+            container.innerHTML = `
+                <div class="section-view">
+                    <button class="back-btn" onclick="selectModule('${currentModule}')">
+                        <i class="fas fa-arrow-left"></i> Torna al modulo
+                    </button>
+                    <div class="section-header">
+                        <span class="badge ${section.type === 'presentation' ? 'badge-cloud' : 'badge-ai'}">
+                            ${section.type === 'presentation' ? 'Presentazione' : 'Laboratorio'}
+                        </span>
+                        <h1>${section.title}</h1>
+                    </div>
+                    <div class="section-body">
+                        ${section.type === 'presentation' ? 
+                            '<h2>' + section.title.replace('Presentazione: ', '') + '</h2>' + getDynamicContent(currentModule, sectionId) : 
+                            renderLabContent(sectionId)}
+                    </div>
+                </div>
+            `;
+            
+            syncPresentationSection(index, section.type, section.title, contentHtml, section.time || (section.type === 'presentation' ? 'Lezione' : 'Laboratorio'));
         };
 
         window.toggleTimer = function() {
