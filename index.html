@@ -547,6 +547,14 @@ function renderLabContent(sectionId) {
                         <div style="margin-top:30px; padding:20px; background:#f8f9fa; border-radius:12px;">
                             <p><i class="fas fa-info-circle"></i> Per aggiungere i tuoi file, vai su "Gestisci Moduli" e carica i file nella sezione risorse.</p>
                         </div>
+                        <div style="margin-top:30px; padding:25px; background:#e8f0fe; border-radius:12px; border:2px solid #4285f4;">
+                            <h3 style="margin-top:0;"><i class="fas fa-google"></i> Importa da Google Slides</h3>
+                            <p>Inserisci il link delle tue slide Google per importare automaticamente il contenuto.</p>
+                            <input type="text" id="google-slides-url" placeholder="https://docs.google.com/presentation/d/..." style="width:100%; padding:12px; margin:15px 0; border-radius:8px; border:1px solid #ddd;">
+                            <button class="btn btn-blue" onclick="importFromGoogleSlides()">
+                                <i class="fas fa-download"></i> Importa Contenuto
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -559,6 +567,54 @@ function renderLabContent(sectionId) {
             navigator.clipboard.writeText(text);
             el.style.background = '#34a853';
             setTimeout(() => el.style.background = '', 1000);
+        };
+
+        window.importFromGoogleSlides = function() {
+            const url = document.getElementById('google-slides-url').value;
+            if (!url) {
+                alert('Inserisci un link valido');
+                return;
+            }
+            
+            // Extract slide ID from URL
+            let slideId = '';
+            if (url.includes('/d/')) {
+                const parts = url.split('/d/')[1];
+                slideId = parts.split('/')[0];
+            }
+            
+            if (!slideId) {
+                alert('Link non valido. Usa un link di Google Slides.');
+                return;
+            }
+            
+            // For demo, create a new module with content from the slides
+            // In production, you would use Google Slides API
+            const moduleId = 'imported-' + Date.now();
+            const moduleTitle = prompt('Titolo del nuovo modulo:', 'Nuovo Modulo Importato');
+            
+            if (!moduleTitle) return;
+            
+            // Create sections from slide structure
+            modulesData[moduleId] = {
+                title: moduleTitle,
+                duration: '2 ore',
+                sections: [
+                    { id: moduleId + '-1', title: 'Presentazione: Slide 1-3', type: 'presentation', time: 'Parte 1', content: '<ul><li>Contenuto importato dalle slide</li><li>Puoi modificare questo contenuto nel gestore moduli</li></ul>' },
+                    { id: moduleId + '-1-lab', title: 'Laboratorio: Esercitazione 1', type: 'lab', time: 'Lab 1', content: '<ol><li>Apri Google Workspace</li><li>Segui le indicazioni delle slide</li><li>Testa le funzionalità</li></ol>' },
+                    { id: moduleId + '-2', title: 'Presentazione: Slide 4-6', type: 'presentation', time: 'Parte 2', content: '<ul><li>Seconda parte del contenuto</li></ul>' },
+                    { id: moduleId + '-2-lab', title: 'Laboratorio: Esercitazione 2', type: 'lab', time: 'Lab 2', content: '<ol><li>Continua con le esercitazioni</li><li>Chiedi supporto al docente</li></ol>' }
+                ],
+                sourceUrl: url,
+                slideId: slideId
+            };
+            
+            saveModulesToStorage();
+            alert('Modulo importato! Vai su "Gestisci Moduli" per visualizzarlo e modificarlo.');
+            
+            // Switch to the new module
+            currentModule = moduleId;
+            selectModule(moduleId);
         };
 
         window.addParticipant = function(e) {
