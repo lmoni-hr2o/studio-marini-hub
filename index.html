@@ -603,13 +603,6 @@ function renderLabContent(sectionId) {
         window.deleteModule = function(id) {
             if (confirm('Elimina questo modulo completamente?')) {
                 delete modulesData[id];
-                editingModuleId = null;
-                document.getElementById('module-editor').innerHTML = '<p style="color:#666;text-align:center;padding:40px;">Seleziona un modulo per modificare</p>';
-                saveModulesToStorage();
-                renderModulesList();
-            }
-        };
-                delete modulesData[id];
                 renderModulesList();
                 saveModulesToStorage();
             }
